@@ -29,7 +29,7 @@ if (report) {
   app.setPath('userData',fs.mkdtempSync(path.join(os.tmpdir(),'kanshan-smoke-')));
 }
 app.setName('看山桌面伙伴');
-app.setAppUserModelId('org.qimai.kanshan');
+app.setAppUserModelId('io.github.betty725.qimai.kanshan');
 
 function place(next, {reset = false, dx = 0, dy = 0} = {}) {
   if (!pet || pet.isDestroyed() || !Object.hasOwn(views,next)) return;

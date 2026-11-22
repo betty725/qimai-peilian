@@ -4,6 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="qimai-version" content="4.8"><meta name="qimai-build" content="pet-4"><title>气脉陪练 4.8 · 刘看山陪你舒展</title>
 <link rel="icon" href="assets/gif/idle.gif"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="bridge/bridge.css"><link rel="stylesheet" href="bridge/continuity.css"><link rel="stylesheet" href="bridge/diary.css"><link rel="stylesheet" href="pet-install.css">
+<link rel="stylesheet" href="home-song.css">
 </head>
 <body><svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10 12 3l9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></symbol><symbol id="i-journey" viewBox="0 0 24 24"><path d="M4 20h16M3 16l6-10 4 7 3-4 5 7M9 6V2m0 0h5l-2 2H9"/></symbol><symbol id="i-wardrobe" viewBox="0 0 24 24"><path d="m8 4-5 3 3 6 2-1v9h8v-9l2 1 3-6-5-3c0 4-8 4-8 0Z"/></symbol><symbol id="i-friends" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m15-7a4 4 0 0 1 5 4v3M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm4-3a4 4 0 0 1 0 8"/></symbol><symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 6v6l4 2M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z"/></symbol><symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19C-1 5 12 2 21 3c0 13-6 19-16 16Zm0 0L16 8"/></symbol><symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 2 2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6Z"/></symbol><symbol id="i-chair" viewBox="0 0 24 24"><path d="M6 3v10h12M6 9h12v8H5m1-4v8m12-4v4M18 9V5"/></symbol><symbol id="i-stand" viewBox="0 0 24 24"><path d="M9 4a3 3 0 1 0 6 0 3 3 0 0 0-6 0Zm3 5v6m-7-4 7-2 7 2M8 22l4-7 4 7"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol><symbol id="i-settings" viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm0-6v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></symbol><symbol id="i-book" viewBox="0 0 24 24"><path d="M12 5v16M3 4c3-1 6-1 9 1 3-2 6-2 9-1v16c-3-1-6-1-9 1-3-2-6-2-9-1Z"/></symbol><symbol id="i-sound" viewBox="0 0 24 24"><path d="m4 9 5 0 5-5v16l-5-5H4Zm14-2c3 3 3 7 0 10"/></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 15A9 9 0 0 1 9 3a9 9 0 1 0 11 12Z"/></symbol><symbol id="i-sun" viewBox="0 0 24 24"><path d="M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm-4-10v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></symbol><symbol id="i-coin" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM12 7l4 5-4 5-4-5Z"/></symbol><symbol id="i-heart" viewBox="0 0 24 24"><path d="M20 5c-3-3-6-1-8 2-2-3-5-5-8-2-4 4 1 9 8 15 7-6 12-11 8-15Z"/></symbol></defs></svg>
 <div id="fileWarning" hidden>请先解压，并双击「启动-Demo-Mac.command」或「启动-Demo-Windows.bat」打开本地服务。</div>
@@ -19,15 +20,45 @@
   <div class="sidebar-bottom"><a id="summonPet" class="sidebar-companion" href="qimai-kanshan-v48://show" aria-label="唤回刘看山桌宠" title="让刘看山回到桌面左下角"><img src="assets/gif/laptop.gif" alt="认真陪你工作的刘看山"><b>再忙，也记得照顾自己。</b><p>我会陪你，把休息变成<br>每天的小习惯。</p><span class="summon-hint" id="summonPetHint">点我，回到桌面左下角</span></a><button type="button" class="text-button" data-install-pet hidden aria-haspopup="dialog" aria-controls="desktopPetHelp">首次使用？下载桌宠</button><button id="settingsBtn" class="text-button">提醒与声音设置</button><button id="aboutBtn" class="text-button">课程说明与资料来源</button><span class="local-note">进度保存在这台设备</span></div>
 </aside>
 <div class="workspace">
-  <header class="topbar"><div class="event-brand"><span class="zhihu-wordmark">知乎</span><span class="event-divider"></span><span>创客松参赛作品<small>出海赛道</small></span></div><div class="wallet"><span class="coin-icon"><svg class="icon" aria-hidden="true"><use href="#i-coin"/></svg></span><b id="coinBalance">0</b><span>金币</span><span class="divider"></span><span class="profile-avatar"><img src="assets/gif/idle.gif" alt=""></span><b id="profileLabel">山间练习者</b><button id="quickSettings" class="icon-button" aria-label="设置"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg></button></div></header>
+  <header class="topbar"><span class="home-brand-label">气脉陪练</span><div class="event-brand"><span class="zhihu-wordmark">知乎</span><span class="event-divider"></span><span>创客松参赛作品<small>出海赛道</small></span></div><div class="wallet"><span class="coin-icon"><svg class="icon" aria-hidden="true"><use href="#i-coin"/></svg></span><b id="coinBalance">0</b><span>金币</span><span class="divider"></span><span class="profile-avatar"><img src="assets/gif/idle.gif" alt=""></span><b id="profileLabel">山间练习者</b><button id="quickSettings" class="icon-button" aria-label="设置"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg><span class="home-settings-label" aria-hidden="true">设置</span></button></div></header>
   <main>
     <section id="home" class="page">
       <div class="page-kicker"><span id="pageContext">今天，也给自己一小段时间</span><span class="date-note">每一小步，都算数</span></div>
-      <div class="welcome"><div class="welcome-copy"><p class="eyebrow"><span class="mini-line"></span>刘看山的陪练小院</p><h1>和看山一起，<br>把日子<span>练松一点。</span></h1><p class="lead">给忙碌按下暂停。<br>从一次舒展开始，把自己照顾好。</p><div class="hero-actions"><a id="compactPetEntry" href="pet.html" class="mobile-companion-link">打开看山陪伴窗</a><button class="mobile-companion-link text-button" type="button" data-install-pet hidden aria-haspopup="dialog" aria-controls="desktopPetHelp">下载电脑桌宠</button><button class="button primary" id="choosePractice">选一段今天的练习</button><button class="text-button greet-button" id="greetCompanion">和看山打个招呼 <svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg></button></div><p class="reminder-inline"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg><span data-reminder-status>提醒未开启</span></p></div><div class="hero-companion"><div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div><div class="hero-cloud cloud-one"></div><div class="hero-cloud cloud-two"></div><div class="hero-hill hill-back"></div><div class="hero-hill hill-front"></div><div class="companion-bubble" id="companionBubble">你来啦，今天也一起动一动吧。</div><div class="mascot-pedestal"></div><img id="homeMascot" src="assets/gif/idle.gif" alt="知乎刘看山陪练伙伴" class="hero-mascot"><canvas id="homeAvatar" hidden aria-label="可装扮的陪练伙伴"></canvas><div class="hero-sticker"><svg class="icon" aria-hidden="true"><use href="#i-leaf"/></svg><span>把一点时间<br><b>留给自己</b></span></div><span class="avatar-caption"><span></span>刘看山 · 今天也陪着你</span></div></div>
-      <div class="section-head" id="modeChooser"><div><p class="section-kicker">从你现在的状态出发</p><h2>今天，想怎样舒展？</h2></div><span>选好姿势，看山陪你开始</span></div>
+      <div class="welcome">
+        <div class="welcome-copy">
+          <h1>和看山一起，<br>把日子练松一点。</h1>
+          <p class="lead">从一次舒展开始，把自己照顾好。</p>
+          <button class="button primary" id="choosePractice" type="button">
+            选一段今天的练习
+            <svg class="icon home-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h17m-7-6 7 6-7 6"/></svg>
+          </button>
+        </div>
+        <div class="hero-companion">
+          <div class="mascot-pedestal" aria-hidden="true"></div>
+          <img id="homeMascot" src="assets/gif/idle.gif" alt="知乎刘看山陪练伙伴" class="hero-mascot">
+          <canvas id="homeAvatar" hidden aria-label="可装扮的陪练伙伴"></canvas>
+          <button class="text-button avatar-caption" id="greetCompanion" type="button" aria-label="和刘看山打个招呼">刘看山</button>
+          <p class="companion-bubble" id="companionBubble" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="section-head" id="modeChooser"><h2>今天，想怎样舒展？</h2></div>
       <div class="mode-grid">
-        <button class="mode-card selected" data-mode="seated" aria-pressed="true"><span class="mode-icon seated-icon"><svg class="icon" aria-hidden="true"><use href="#i-chair"/></svg></span><span><b>坐着，也能松一松</b><small>上半身改编练习 · 稳定座椅即可</small></span><span class="mode-check"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span></button>
-        <button class="mode-card" data-mode="standing" aria-pressed="false"><span class="mode-icon standing-icon"><svg class="icon" aria-hidden="true"><use href="#i-stand"/></svg></span><span><b>站起来，舒展全身</b><small>易筋经十二势 · 留出全身活动空间</small></span><span class="mode-check"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span></button>
+        <button class="mode-card selected" type="button" data-mode="seated" aria-pressed="true">
+          <span><b>坐姿练习</b><small>一椅松风 · 约 4 分钟</small></span>
+          <svg class="icon home-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h17m-7-6 7 6-7 6"/></svg>
+        </button>
+        <button class="mode-card" type="button" data-mode="standing" aria-pressed="false">
+          <span><b>站姿练习</b><small>易筋经十二势</small></span>
+          <svg class="icon home-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h17m-7-6 7 6-7 6"/></svg>
+        </button>
+      </div>
+      <div class="home-pet-tools">
+        <button class="text-button home-pet-install" type="button" data-install-pet hidden aria-haspopup="dialog" aria-controls="desktopPetHelp">
+          <img src="assets/gif/laptop.gif" alt="">
+          下载电脑桌宠
+          <svg class="icon home-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6M8 6h10v10"/></svg>
+        </button>
+        <a id="compactPetEntry" class="text-button" href="pet.html">打开看山陪伴窗</a>
       </div>
       <div class="course-strip"><div class="course-art" aria-hidden="true"><img src="assets/gif/sway.gif" alt=""><span>看山陪练</span></div><div class="course-copy"><p class="eyebrow" id="courseKind">坐姿 · 上半身</p><h2 id="courseTitle">一椅松风</h2><p id="courseDescription">六段上半身练习，从合掌松肩到放松收势。</p></div><div class="course-actions"><label id="courseLengthWrap" hidden>课程长度<select id="courseLength"><option value="full">完整十二势</option><option value="short">基础三势</option></select></label><span id="courseDuration">6 段 · 约 4 分钟</span><button id="startCourse" class="button primary">开始这套练习</button><button id="previewCourse" class="text-button">先看动作演示</button></div></div>
       <section id="zhihuHome"></section>

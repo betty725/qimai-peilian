@@ -1,0 +1,32 @@
+#dailyRibbon {display:none}
+#practice[data-daily="true"] #dailyRibbon {
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  min-height:40px;padding:5px 14px;background:#faf4e5;color:#665d47;
+  border-block:1px solid #e6dbc2;font:500 .875rem/1.35 system-ui,sans-serif
+}
+#dailyRibbon span:nth-of-type(3){color:#2d4b44;font-weight:700}
+#dailyRibbon i {width:14px;height:1px;background:#c3b99f}
+#dailyInk {display:inline-grid;place-items:center;width:24px;height:24px;
+  border:1px solid #9c614c;color:#884d3a;border-radius:4px;font:600 1rem/1 serif}
+#practice[data-daily="true"] .practice-header{background:#fffcf5}
+.daily-actions a.daily-btn {display:inline-flex;align-items:center;text-decoration:none}
+.qs-topic .daily-zhihu-hot {margin-inline-start:auto;font-size:.85rem;font-weight:500}
+#zhihuAtlasResult:not([hidden]) {margin:18px 0 0}
+#resultDialog,.break-dialog {max-height:90dvh;overflow-y:auto}
+@media (prefers-reduced-motion:no-preference) {
+  @view-transition{navigation:auto}
+  html:has(#daily) .daily-pillar strong,
+  #practice[data-daily="true"]:not([hidden]) #practiceKind {view-transition-name:day-pillar}
+  ::view-transition-group(day-pillar) {animation-duration:260ms}
+  #practice[data-daily="true"]:not([hidden]) .practice-layout {animation:daily-practice-enter .28s ease-out both}
+  @keyframes daily-practice-enter {from {opacity:.35;transform:translateY(6px)} to {opacity:1;transform:none}}
+}
+@media(max-width:720px) {
+  #practice[data-daily="true"] .practice-demo-column {display:contents}
+  #practice[data-daily="true"] .demonstration {order:0;height:clamp(180px,27dvh,250px);min-height:0}
+  #practice[data-daily="true"] .camera-panel {order:1}
+  #practice[data-daily="true"] .practice-instructions {order:2}
+  #practice[data-daily="true"] .skeleton-stage {height:clamp(170px,26dvh,235px)}
+  #practice[data-daily="true"] .camera-heading {padding:12px 14px}
+  #practice[data-daily="true"] .camera-body {padding:12px 14px}
+}

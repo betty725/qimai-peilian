@@ -1,0 +1,37 @@
+.daily-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);border:1px solid var(--line);border-radius:10px;background:var(--paper);overflow:hidden}
+.daily-sheet,.daily-book{padding:clamp(18px,2.6vw,32px);min-width:0}
+.daily-book{background:var(--celadon);border-inline-start:1px solid var(--line)}
+.daily-heading,.daily-pillar,.daily-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.daily-heading{justify-content:space-between}
+.daily-heading h3{font:600 clamp(20px,2vw,26px)/1.35 var(--serif,serif);margin:0}
+.daily-heading>span,.daily-local{color:var(--muted);font-size:13px;line-height:1.55}
+.daily-sheet p,.daily-book p{font-size:15px;line-height:1.65;color:var(--text);margin:9px 0 0}
+.daily-pillar{margin-top:9px}
+.daily-pillar strong{font:600 clamp(24px,2.7vw,36px)/1.4 var(--serif,serif)}
+.daily-practice{margin-top:13px;padding-top:10px;border-top:1px solid var(--line)}
+.daily-practice .daily-route,.daily-practice h4{font:600 18px/1.55 var(--serif,serif);margin:0;color:var(--ink)}
+.daily-progress>span,.daily-practice .daily-pace{color:var(--muted);font-size:14px;line-height:1.6}
+.daily-actions{margin-top:15px;gap:8px}
+.daily-btn{font:inherit;font-size:14px;line-height:1.45;min-height:39px;border:1px solid var(--rule);background:var(--paper);color:var(--green);border-radius:4px;padding:7px 12px;cursor:pointer}
+.daily-btn:hover{background:var(--celadon)}
+.daily-primary{background:var(--green);border-color:var(--green);color:var(--on-green)}.daily-primary:hover{background:var(--deep)}
+.daily-link{min-height:30px;border:0;padding:3px 1px;background:transparent;color:var(--leaf-ink);text-decoration:underline;text-underline-offset:3px}.daily-link:hover{background:transparent;color:var(--text)}
+.daily-stamps{list-style:none;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px 6px;padding:0;margin:18px 0}
+.daily-stamp{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted)}
+.daily-glyph{position:relative;width:43px;max-width:100%;aspect-ratio:1;display:grid;place-items:center;border:1px dashed var(--rule);border-radius:3px;font:500 24px/1 var(--serif,serif);background:#f8fff273}
+.daily-stamp small{font-size:12px;line-height:1.4}
+.daily-current .daily-glyph{outline:1px solid var(--stamp-ink);outline-offset:2px}
+.daily-earned .daily-glyph{background:var(--stamp-ink);border:1px solid var(--stamp-ink);color:var(--on-green)}
+.daily-glyph i{position:absolute;right:-3px;bottom:-3px;padding:1px 2px;border-radius:2px;background:var(--stamp-ink);font:700 12px/1 var(--sans,sans-serif)}
+.daily-book .daily-achievement{padding-top:9px;border-top:1px solid var(--line);color:var(--muted)}
+.daily-book .daily-full,.daily-practice .daily-completed{color:var(--green);font-weight:600}
+.daily-local{display:block;margin-top:6px}
+@media(max-width:700px){.daily-layout{grid-template-columns:1fr}.daily-book{border-inline-start:0;border-top:1px solid var(--line)}.daily-stamps{max-width:370px}.daily-heading{gap:6px}}
+
+.daily-keepsake{margin:15px 0 4px;display:flex;align-items:center;gap:12px;color:var(--muted)}
+.daily-keepsake strong,.daily-keepsake small{display:block}.daily-keepsake strong{font:600 17px/1.5 var(--serif)}.daily-keepsake small{font-size:13px;line-height:1.5}
+.daily-enamel{border:1px dashed var(--rule);background:var(--celadon);width:52px;height:52px;position:relative;flex:none;border-radius:50%;display:grid;place-items:center}
+.daily-enamel img{height:35px;width:32px;object-fit:contain;opacity:.44;filter:grayscale(1)}.daily-enamel b{position:absolute;right:-4px;bottom:0;font:600 14px/1.2 var(--serif);background:var(--bud);border:1px solid var(--rule);border-radius:3px;padding:1px 3px}
+.daily-keepsake.is-lit{color:var(--text)}.is-lit .daily-enamel{border:2px solid #9c7741;background:radial-gradient(circle at 35% 20%,#fff4cd,#e3c379);box-shadow:0 0 0 2px #f6eaca,0 0 0 3px #cbb380}
+.is-lit .daily-enamel img{opacity:1;filter:none}.is-lit .daily-enamel b{background:var(--seal-color);color:var(--on-green);border:1px solid #eed9a7}
+@media(prefers-reduced-motion:no-preference){.daily-keepsake.newly-lit .daily-enamel{animation:press-kanshan-stamp .75s ease-out}@keyframes press-kanshan-stamp{0%{transform:scale(1.22) rotate(-10deg);opacity:.42}64%{transform:scale(.95) rotate(2deg);opacity:1}100%{transform:none}}}

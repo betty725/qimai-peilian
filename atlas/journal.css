@@ -1,0 +1,27 @@
+@import url("./daily.css");
+@import url("./constitution.css");
+.atlas-cover-actions{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 17px}
+.journal-shortcut{font-size:14px;color:var(--leaf-ink);text-decoration-thickness:1px;text-underline-offset:4px;line-height:1.7}
+.field-journal{scroll-margin-top:12px;border-block-start:1px solid var(--line);padding-top:25px;margin-top:30px}
+.journal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;gap:12px}
+.journal-head h2{font:600 clamp(1.75rem,2.45vw,2.4rem)/1.35 var(--serif);letter-spacing:.055em}
+.journal-seal{width:33px;height:33px;border:1px solid #b48271;border-radius:4px;color:#995d4c;display:grid;place-items:center;transform:rotate(-4deg)}
+.journal-seal svg{width:20px;height:20px}.journal-tabs{display:flex;gap:3px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.journal-tabs button{flex:0 1 auto;min-width:116px;border:0;border-bottom:3px solid transparent;background:transparent;padding:10px 15px;font:600 16px/1.45 var(--serif);color:var(--muted)}
+.journal-tabs button[aria-selected=true]{color:var(--green);border-bottom-color:var(--green);background:var(--bud)}
+.journal-tabs button:hover{color:var(--deep);background:var(--celadon)}.journal-panel{min-width:0;scroll-margin-top:100px}
+.journal-panel :is(input,select,button,a):focus-visible,.journal-tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+@media(max-width:610px){.journal-tabs button{min-width:0;flex:1;padding:9px 3px;font-size:14px}.field-journal{padding-top:20px;margin-top:20px}.journal-shortcut{font-size:13px}.atlas-cover-actions{gap:5px 12px}.journal-head h2{font-size:1.7rem}}
+
+/* Carry the atlas paper and ink into the practice note mounted after collecting a stamp. */
+#zhihuAtlasResult {
+  --qs-ink: var(--ink);
+  --qs-muted: var(--muted);
+  --qs-action: var(--green);
+  --qs-paper: var(--paper);
+  --qs-edge: var(--line);
+  background: var(--paper);
+  border-radius: 10px;
+}
+#zhihuAtlasResult textarea { background: #fcfff8; }
+#zhihuAtlasResult .qs-primary:hover { background: var(--deep); }

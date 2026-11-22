@@ -1,0 +1,33 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="qimai-build" content="pet-4"><title>看山 · 桌面陪伴</title><link rel="stylesheet" href="pet.css"></head><body class="compact">
+<main id="pet"><header><span class="brand"><i></i> 看山在身边</span><div><button id="collapse" title="收起为桌宠">收起</button><button id="drag" title="拖动宠物">⠿</button><button id="settings" title="陪伴设置">⚙</button><button id="close" title="关闭宠物">×</button></div></header>
+<section class="bubble" aria-live="polite"><span id="eyebrow">给自己留一点空隙</span><h1 id="message">你忙你的，我陪着你。</h1><p id="detail">打开观察，或选一个现在的状态。</p><div id="breakActions" hidden><button id="practice">跟我活动一下 ↗</button><button id="rest">我去活动两分钟</button><button id="snooze">5 分钟后提醒</button></div></section>
+<section id="scene" class="scene idle" role="button" tabindex="0" aria-label="刘看山：单击展开陪伴，双击打开气脉陪练"><div class="halo"></div><canvas id="writingScene" aria-hidden="true"></canvas><img id="mascot" src="assets/pet-quiet/stand.png" alt="刘看山陪伴动画"><span id="activityIcon" class="activity-icon">✦</span></section>
+<p id="petHint" class="pet-hint">单击陪伴 · 双击练习 · 三击知乎</p><footer><span id="status">安静陪伴</span><span id="timer">计时未开始</span></footer>
+<div class="toolbar"><button id="camera">开启摄像头观察</button><select id="mode" aria-label="状态模式"><option value="auto">自动观察</option><option value="screen">我在看电脑</option><option value="writing">我在写作业</option><option value="idle">安静陪伴</option></select></div><p class="privacy" id="privacy">仅本机分析 · 不录像、不上传</p>
+<section id="options" hidden><div class="option-title"><b>陪伴设置</b><button id="dismiss">收起</button></div><label>连续用功多久提醒 <select id="minutes"><option>20</option><option selected>30</option><option>45</option><option>60</option></select> 分钟</label><p>让头、肩膀入镜。摄像头只能推测姿态；低头看书也可能被归为书写。</p><div class="calibrate"><button data-calibrate="screen">校准看屏幕 · 5 秒</button><button data-calibrate="writing">校准低头书写 · 5 秒</button></div><p id="calibrationStatus">两种姿势各校准一次，可减少误判。</p><button id="checkEngine">检查识别引擎（不启用摄像头）</button><button id="clearCalibration">清除姿势校准</button><button id="position">移回屏幕左下角</button><button id="previewBreak">体验休息气泡</button><div class="camera-preview"><video id="video" muted playsinline></video><span>摄像头预览（不保存）</span></div><p id="error" role="status"></p></section>
+</main>
+<section id="zhihuDock" hidden aria-label="知乎快捷球">
+ <button id="zhihuBall" aria-label="展开知乎快捷菜单" title="点开知乎快捷菜单"><span class="ball-ring"><span>知</span></span></button>
+ <button id="zhihuOrbBack" class="orb-back" title="回到刘看山">回到看山</button>
+ <section id="zhihuPanel" hidden aria-label="知乎快捷菜单">
+  <div class="zhihu-top"><div><span class="zhihu-eyebrow">看山 · 知乎捷径</span><h2>让好奇心，走近一点</h2></div><button id="zhihuFold" aria-label="收起为知乎悬浮球" title="收起为悬浮球">−</button></div>
+  <nav class="zhihu-grid" aria-label="知乎快捷入口">
+   <a data-zhihu="home" href="https://www.zhihu.com/" target="_blank" rel="noopener noreferrer"><span class="shortcut-icon home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></span><strong>知乎首页</strong><small>发现有意思的回答</small></a>
+   <button id="zhihuLikes"><span class="shortcut-icon likes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.4 5.4 0 0 0-7.6 0L12 5.8l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.8a5.4 5.4 0 0 0 0-7.6Z"/></svg></span><strong>我的喜欢</strong><small id="zhihuLikesHint">首次设置专属入口</small></button>
+   <a data-zhihu="collections" href="https://www.zhihu.com/collections" target="_blank" rel="noopener noreferrer"><span class="shortcut-icon favorites"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.3.9-4.6 4.5 1.1 6.3-5.6-3-5.6 3 1.1-6.3L3 9.6l6.2-.9Z"/></svg></span><strong>我的收藏</strong><small>回看收藏的好内容</small></a>
+   <a data-zhihu="news" href="https://www.zhihu.com/hot" target="_blank" rel="noopener noreferrer"><span class="shortcut-icon news"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 7h8M8 11h3M8 15h8M8 18h6M14 11h2"/></svg></span><strong>热点资讯</strong><small>看看知乎正在热议</small></a>
+
+  </nav>
+  <div class="zhihu-bottom"><button id="zhihuReturn"><img src="assets/pet-quiet/stand.png" alt="">回到看山</button><button id="zhihuManageLikes">喜欢入口设置</button></div>
+  <section id="zhihuLikesSetup" hidden aria-label="我的喜欢入口设置">
+   <div class="likes-title"><strong>我的喜欢入口</strong><button id="zhihuLikesCancel" aria-label="关闭喜欢入口设置">×</button></div>
+   <p>绑定你能打开的知乎「喜欢」页面链接，之后可一键直达。</p>
+   <p class="likes-help">当前网页版尚未核实统一的喜欢列表地址。此入口独立于收藏夹。</p>
+   <label for="zhihuLikesURL">知乎页面链接</label><input id="zhihuLikesURL" type="url" placeholder="https://www.zhihu.com/…" autocomplete="off">
+   <p id="zhihuLikesMessage" role="status"></p>
+   <button id="zhihuLikesSave">保存入口</button><button id="zhihuLikesClear">清除设置</button>
+  </section>
+  <p class="zhihu-note"><span class="zhihu-normal-note">在浏览器中打开 · 个人内容需登录知乎</span><span class="zhihu-break-note" role="status">该活动一下啦，点「回到看山」休息</span></p>
+ </section>
+</section>
+<script src="tracking-config.js"></script><script src="tracker.js"></script><script src="pet-state.js"></script><script src="camera-access.js"></script><script src="pet-visual.js"></script><script src="pet-copy.js"></script><script src="pet-writing.js"></script><script src="pet.js"></script><script src="pet-clicks.js"></script><script src="pet-shell.js"></script></body></html>

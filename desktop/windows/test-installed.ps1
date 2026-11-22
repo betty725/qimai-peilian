@@ -17,14 +17,26 @@ function GetPetBrowser {
         Where-Object { $_.ExecutablePath -and (Test-Path -LiteralPath $_.ExecutablePath) -and
             $script:fso.GetFile($_.ExecutablePath).ShortPath -eq $script:shortExe -and $_.CommandLine -notmatch ' --type=' }
 }
-function ShowViaProtocol {
-    $command = [Diagnostics.ProcessStartInfo]::new('qimai-kanshan-v48://show')
+function OpenWithWindowsShell([string] $Item) {
+    $command = [Diagnostics.ProcessStartInfo]::new($Item)
     $command.UseShellExecute = $true
     [void][Diagnostics.Process]::Start($command)
 }
+function WaitForOnePet([string] $Source) {
+    for ($i=0; $i -lt 30; $i++) {
+        $running = @(GetPetBrowser)
+        if ($running.Count -eq 1) { return $running[0] }
+        Start-Sleep 1
+    }
+    throw "$Source did not open the installed pet at $exe"
+}
+function StopInstalledPet {
+    GetPetBrowser | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+    for ($i=0; $i -lt 15 -and (GetPetBrowser); $i++) { Start-Sleep 1 }
+    Require (!(GetPetBrowser)) 'Could not close the installed pet.'
+}
 
 Require (!(Test-Path $protocolKey)) 'Test requires a clean Windows user.'
-$shell = New-Object -ComObject WScript.Shell
 $fso = New-Object -ComObject Scripting.FileSystemObject
 # Hosted runners may have a freshly initialized shell profile: create the standard Windows
 # folders before setup, exactly as Explorer does at a normal user's first sign-in.
@@ -44,32 +56,36 @@ $base = Split-Path $exe
 foreach ($asset in @('pet.html','pet-shell.js','assets\pet-quiet\typing.gif','assets\pet-quiet\typing-frames\01.png','vendor\tasks-vision\pose_landmarker_full.task','vendor\tasks-vision\pose_landmarker_lite.task','vendor\tasks-vision\wasm\vision_wasm_internal.wasm')) {
     Require (Test-Path (Join-Path $base "resources\site\$asset") -PathType Leaf) "Missing packaged asset: $asset"
 }
+# Silent-install setup can start the pet in some Windows environments.
+StopInstalledPet
 foreach ($folder in $shortcutFolders) {
     Require ($folder -and (Test-Path -LiteralPath $folder)) "Shell folder missing: $folder"
     $shortcut = Join-Path $folder '看山桌面伙伴.lnk'
     Require (Test-Path -LiteralPath $shortcut -PathType Leaf) "Shortcut absent: $shortcut"
-    $target = $shell.CreateShortcut($shortcut).TargetPath
-    Write-Output "$shortcut -> $target"
-    Require ($target -and (Test-Path -LiteralPath $target) -and $fso.GetFile($target).ShortPath -eq $shortExe) "Shortcut points to a different executable: $target"
+    # Exercise the very same Unicode shell-link resolution used by Explorer when the
+    # user double clicks. WScript.Shell can report a blank TargetPath on a valid .lnk.
+    OpenWithWindowsShell $shortcut
+    $started = WaitForOnePet $shortcut
+    Write-Output "$shortcut started $($started.ExecutablePath) (PID $($started.ProcessId))"
+    StopInstalledPet
 }
-# Silent install normally leaves the app closed. Stop only this test install if the installer started it.
-GetPetBrowser | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
-Start-Sleep 1
-RunAndWait $exe ("--smoke-test=`"$smokeReport`"") 135
+try {
+    RunAndWait $exe ("--smoke-test=`"$smokeReport`"") 135
+} catch {
+    if (Test-Path -LiteralPath $smokeReport) { Get-Content -LiteralPath $smokeReport -Raw | Out-Host }
+    throw
+}
 $report = Get-Content -LiteralPath $smokeReport -Raw | ConvertFrom-Json
 Require ($report.ok -eq $true) ('Native smoke test failed: ' + ($report | ConvertTo-Json -Depth 5))
 Write-Output ($report | ConvertTo-Json -Depth 5)
 
-ShowViaProtocol
-for ($i=0; $i -lt 30 -and !(GetPetBrowser); $i++) { Start-Sleep 1 }
-$first = @(GetPetBrowser)
-Require ($first.Count -eq 1) 'The web protocol did not start exactly one native app.'
-ShowViaProtocol
+OpenWithWindowsShell 'qimai-kanshan-v48://show'
+$first = WaitForOnePet 'Web protocol'
+OpenWithWindowsShell 'qimai-kanshan-v48://show'
 Start-Sleep 3
 $second = @(GetPetBrowser)
-Require ($second.Count -eq 1 -and $second[0].ProcessId -eq $first[0].ProcessId) 'The protocol opened a second pet.'
-Stop-Process -Id $first[0].ProcessId -Force
-Start-Sleep 1
+Require ($second.Count -eq 1 -and $second[0].ProcessId -eq $first.ProcessId) 'The protocol opened a second pet.'
+StopInstalledPet
 
 $uninstall = @(Get-ChildItem -LiteralPath $base -Filter 'Uninstall*.exe')
 Require ($uninstall.Count -eq 1) 'Expected a single Windows uninstaller.'

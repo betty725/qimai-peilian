@@ -1,0 +1,71 @@
+name: Build and publish Windows desktop pet
+on:
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: kanshan-windows-release
+  cancel-in-progress: false
+jobs:
+  windows:
+    if: github.ref == 'refs/heads/main' && github.actor == github.repository_owner
+    runs-on: windows-2022
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: desktop/windows
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run dist:win
+      - name: Install, exercise the native app and web protocol, and uninstall
+        run: ./test-installed.ps1 -Installer dist/Kanshan-Setup-win-x64.exe
+      - name: Save native runtime report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-runtime-report
+          path: ${{ runner.temp }}/kanshan-smoke.json
+          if-no-files-found: ignore
+      - name: Retain tested installer for publication
+        uses: actions/upload-artifact@v4
+        with:
+          name: tested-windows-installer
+          path: desktop/windows/dist/Kanshan-Setup-win-x64.exe
+          compression-level: 0
+          if-no-files-found: error
+  publish:
+    needs: windows
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: tested-windows-installer
+      - name: Publish the tested installer atomically
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          tag=desktop-4.8.4
+          setup=Kanshan-Setup-win-x64.exe
+          sha256sum "$setup" > "$setup.sha256"
+          if gh release view "$tag" --repo "$GH_REPO" > /dev/null 2>&1; then
+            draft=$(gh release view "$tag" --json isDraft --jq '.isDraft')
+            if [[ "$draft" == false ]]; then
+              gh release view "$tag" --json assets --jq '.assets[].name' | grep -Fx "$setup"
+              exit 0
+            fi
+          else
+            gh release create "$tag" --draft --target "$GITHUB_SHA" --title '看山桌面伙伴 4.8.4 · Windows' --notes 'Windows 10/11 x64 桌宠安装程序。安装后可从开始菜单，或从气脉陪练网页左下角唤回。'
+          fi
+          gh release upload "$tag" "$setup" "$setup.sha256" --clobber
+          gh release edit "$tag" --draft=false --latest=false

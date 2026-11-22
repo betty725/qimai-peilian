@@ -14,7 +14,8 @@ function RunAndWait([string] $File, [string] $Arguments, [int] $TimeoutSeconds) 
 }
 function GetPetBrowser {
     Get-CimInstance Win32_Process -Filter "Name = 'Kanshan.exe'" |
-        Where-Object { $_.ExecutablePath -eq $script:exe -and $_.CommandLine -notmatch ' --type=' }
+        Where-Object { $_.ExecutablePath -and (Test-Path -LiteralPath $_.ExecutablePath) -and
+            $script:fso.GetFile($_.ExecutablePath).ShortPath -eq $script:shortExe -and $_.CommandLine -notmatch ' --type=' }
 }
 function ShowViaProtocol {
     $command = [Diagnostics.ProcessStartInfo]::new('qimai-kanshan-v48://show')
@@ -23,22 +24,33 @@ function ShowViaProtocol {
 }
 
 Require (!(Test-Path $protocolKey)) 'Test requires a clean Windows user.'
+$shell = New-Object -ComObject WScript.Shell
+$fso = New-Object -ComObject Scripting.FileSystemObject
+# Hosted runners may have a freshly initialized shell profile: create the standard Windows
+# folders before setup, exactly as Explorer does at a normal user's first sign-in.
+$shortcutFolders = @('DesktopDirectory','Programs') | ForEach-Object {
+    [Environment]::GetFolderPath($_, [Environment+SpecialFolderOption]::Create)
+}
 RunAndWait (Resolve-Path $Installer) '/S' 150
 $reg = Get-Item "$protocolKey\shell\open\command"
 $openCommand = $reg.GetValue('')
 Require ($openCommand -match '^"([^"]+\\Kanshan\.exe)" -- "%1"$') "Unexpected protocol command: $openCommand"
 $exe = $Matches[1]
 Require (Test-Path $exe -PathType Leaf) 'Registered executable is missing.'
+$shortExe = $fso.GetFile($exe).ShortPath
+Write-Output "Installed executable: $exe ($shortExe)"
 Require ($null -ne (Get-Item $protocolKey).GetValue('URL Protocol', $null)) 'Missing URL Protocol flag.'
 $base = Split-Path $exe
 foreach ($asset in @('pet.html','pet-shell.js','assets\pet-quiet\typing.gif','assets\pet-quiet\typing-frames\01.png','vendor\tasks-vision\pose_landmarker_full.task','vendor\tasks-vision\pose_landmarker_lite.task','vendor\tasks-vision\wasm\vision_wasm_internal.wasm')) {
     Require (Test-Path (Join-Path $base "resources\site\$asset") -PathType Leaf) "Missing packaged asset: $asset"
 }
-$shell = New-Object -ComObject WScript.Shell
-foreach ($folder in @('DesktopDirectory','Programs')) {
-    $path = [Environment]::GetFolderPath($folder)
-    $found = Get-ChildItem $path -Filter '*.lnk' -Recurse | Where-Object { $shell.CreateShortcut($_.FullName).TargetPath -eq $exe }
-    Require ($null -ne $found) "No application shortcut in $folder"
+foreach ($folder in $shortcutFolders) {
+    Require ($folder -and (Test-Path -LiteralPath $folder)) "Shell folder missing: $folder"
+    $shortcut = Join-Path $folder '看山桌面伙伴.lnk'
+    Require (Test-Path -LiteralPath $shortcut -PathType Leaf) "Shortcut absent: $shortcut"
+    $target = $shell.CreateShortcut($shortcut).TargetPath
+    Write-Output "$shortcut -> $target"
+    Require ($target -and (Test-Path -LiteralPath $target) -and $fso.GetFile($target).ShortPath -eq $shortExe) "Shortcut points to a different executable: $target"
 }
 # Silent install normally leaves the app closed. Stop only this test install if the installer started it.
 GetPetBrowser | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }

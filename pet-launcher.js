@@ -28,12 +28,14 @@
     preferred.classList.add('pet-download-preferred');
     preferred.querySelector('a').classList.add('primary');
     help.querySelector('[data-wake-pet]').hidden = false;
-  } else {
+  }
+
+  if (!desktopMac) {
     mascot.href = '#desktopPetHelp';
     mascot.setAttribute('aria-label', '查看看山桌宠下载与使用方式');
     mascot.setAttribute('aria-haspopup', 'dialog');
     mascot.title = '下载看山桌宠';
-    document.getElementById('summonPetHint').textContent = '了解桌面看山';
+    document.getElementById('summonPetHint').textContent = desktopWindows ? '点我，下载 Windows 桌宠' : '了解桌面看山';
     mascot.addEventListener('click', (event) => {
       event.preventDefault();
       openInstall();

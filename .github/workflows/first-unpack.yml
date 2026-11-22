@@ -1,0 +1,50 @@
+name: Unpack Qimai source once
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  unpack:
+    if: github.ref == 'refs/heads/main' && github.actor == github.repository_owner
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify and unpack into main without replacing existing files
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, re, shutil, tarfile, tempfile
+          rows = Path('qimai-checksums.txt').read_text(encoding='ascii').splitlines()
+          assert rows, 'No package manifest entries.'
+          with tempfile.TemporaryFile() as archive:
+              for index, row in enumerate(rows):
+                  match = re.fullmatch(r'([0-9a-f]{64})  (qimai-site-\d{3}\.bin)', row)
+                  assert match and match[2] == f'qimai-site-{index:03d}.bin', 'Invalid package manifest.'
+                  data = Path(match[2]).read_bytes()
+                  assert hashlib.sha256(data).hexdigest() == match[1], 'Part checksum mismatch.'
+                  archive.write(data)
+              archive.seek(0)
+              output = Path('.')
+              with tarfile.open(fileobj=archive, mode='r|gz') as tar:
+                  for member in tar:
+                      relative = Path(member.name)
+                      assert member.isfile() and not relative.is_absolute() and '..' not in relative.parts
+                      assert all(not part.startswith('.') for part in relative.parts) or relative == Path('.nojekyll')
+                      target = output / relative
+                      target.parent.mkdir(parents=True, exist_ok=True)
+                      with tar.extractfile(member) as source, target.open('xb') as destination:
+                          shutil.copyfileobj(source, destination)
+          assert (output / 'index.html').is_file()
+          PY
+      - name: Commit browsable source
+        shell: bash
+        run: |
+          git rm -- qimai-checksums.txt qimai-site-*.bin
+          touch .nojekyll
+          git add --all
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Publish Qimai static source'
+          git push origin HEAD:refs/heads/main

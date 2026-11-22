@@ -1,50 +1,50 @@
-name: Unpack Qimai source once
-on:
-  workflow_dispatch:
-
+name: Import Qimai web release
+on: workflow_dispatch
 permissions: {}
-
 jobs:
-  unpack:
+  import:
     if: github.ref == 'refs/heads/main' && github.actor == github.repository_owner
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Verify and unpack into main without replacing existing files
-        shell: bash
+      - name: Download the public web-4.8 release asset
+        run: |
+          curl --fail --location --retry 3 --output "$RUNNER_TEMP/site.zip" \
+            "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/web-4.8/qimai-peilian-web-4.8.zip"
+      - name: Import the 361 approved static files
         run: |
           python3 - <<'PY'
-          from pathlib import Path
-          import hashlib, re, shutil, tarfile, tempfile
-          rows = Path('qimai-checksums.txt').read_text(encoding='ascii').splitlines()
-          assert rows, 'No package manifest entries.'
-          with tempfile.TemporaryFile() as archive:
-              for index, row in enumerate(rows):
-                  match = re.fullmatch(r'([0-9a-f]{64})  (qimai-site-\d{3}\.bin)', row)
-                  assert match and match[2] == f'qimai-site-{index:03d}.bin', 'Invalid package manifest.'
-                  data = Path(match[2]).read_bytes()
-                  assert hashlib.sha256(data).hexdigest() == match[1], 'Part checksum mismatch.'
-                  archive.write(data)
-              archive.seek(0)
-              output = Path('.')
-              with tarfile.open(fileobj=archive, mode='r|gz') as tar:
-                  for member in tar:
-                      relative = Path(member.name)
-                      assert member.isfile() and not relative.is_absolute() and '..' not in relative.parts
-                      assert all(not part.startswith('.') for part in relative.parts) or relative == Path('.nojekyll')
-                      target = output / relative
-                      target.parent.mkdir(parents=True, exist_ok=True)
-                      with tar.extractfile(member) as source, target.open('xb') as destination:
-                          shutil.copyfileobj(source, destination)
-          assert (output / 'index.html').is_file()
+          import hashlib, os, stat, zipfile
+          from pathlib import Path, PurePosixPath
+          root = Path.cwd()
+          package = Path(os.environ['RUNNER_TEMP'])/'site.zip'
+          assert hashlib.sha256(package.read_bytes()).hexdigest() == 'b4b66c424d4be119b18c6d07c4cb2cf843415321547f6785f9005cb815cc377e'
+          with zipfile.ZipFile(package) as archive:
+              names = sorted(archive.namelist())
+              assert len(names) == len(set(names)) == 361
+              manifest = hashlib.sha256('\n'.join(names).encode()).hexdigest()
+              assert manifest == 'fa30e32373405e2059b118f463d662af401985030f09c9436887ec543cd0356e'
+              for name in names:
+                  entry, relative = archive.getinfo(name), PurePosixPath(name)
+                  assert stat.S_ISREG(entry.external_attr >> 16) and not relative.is_absolute()
+                  assert relative.as_posix() == name and '\\' not in name
+                  assert name == '.nojekyll' or all(not p.startswith('.') for p in relative.parts)
+                  dest = root / relative
+                  assert dest.resolve() == dest, 'Existing symbolic link: ' + name
+                  data = archive.read(entry)
+                  if dest.exists():
+                      assert dest.is_file() and dest.read_bytes() == data, 'Existing file differs: ' + name
+                      continue
+                  dest.parent.mkdir(parents=True, exist_ok=True)
+                  with dest.open('xb') as f:
+                      f.write(data)
           PY
-      - name: Commit browsable source
-        shell: bash
+      - name: Commit the site to main
         run: |
-          git rm -- qimai-checksums.txt qimai-site-*.bin
-          touch .nojekyll
           git add --all
-          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Publish Qimai static source'
-          git push origin HEAD:refs/heads/main
+          if ! git diff --cached --quiet; then
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Publish Qimai web 4.8'
+            git push origin HEAD:refs/heads/main
+          fi

@@ -1,0 +1,48 @@
+{
+  "name": "qimai-kanshan-pet",
+  "version": "4.8.4",
+  "private": true,
+  "description": "看山桌面伙伴 · 久坐提醒与工间陪伴",
+  "author": "气脉陪练",
+  "main": "main.cjs",
+  "scripts": {
+    "dist:win": "electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "45.4.1",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "io.github.betty725.qimai.kanshan",
+    "productName": "看山桌面伙伴",
+    "asar": true,
+    "files": ["main.cjs", "preload.cjs"],
+    "extraResources": [
+      {
+        "from": "../..",
+        "to": "site",
+        "filter": [
+          "pet.html", "pet.css", "pet.js", "pet-clicks.js", "pet-copy.js",
+          "pet-shell.js", "pet-state.js", "pet-visual.js", "pet-writing.js",
+          "camera-access.js", "tracker.js", "tracking-config.js", "pose-worker.js",
+          "assets/pet-quiet/**/*", "vendor/tasks-vision/**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": ["nsis"],
+      "executableName": "Kanshan",
+      "icon": "../../assets/pet-quiet/stand.png",
+      "artifactName": "Kanshan-Setup-win-x64.exe"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "看山桌面伙伴",
+      "uninstallDisplayName": "看山桌面伙伴",
+      "include": "installer.nsh"
+    }
+  }
+}

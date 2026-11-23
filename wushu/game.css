@@ -1,0 +1,28 @@
+.pine-trail {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  width: min(1334px, calc(100% - 48px));
+  margin: 16px auto 0;
+  padding: 12px 20px;
+  border: 1px solid #d4dfd4;
+  border-radius: 12px;
+  color: #284b3a;
+  background: #f2f6ee;
+}
+.pine-trail[hidden], #pineResult[hidden] { display: none; }
+.pine-copy { display: grid; gap: 3px; margin-right: auto; }
+.pine-copy b { font: 600 18px/1.4 "Songti SC", SimSun, serif; }
+.pine-copy span { font-size: 14px; color: #526657; }
+.pine-leaves { display: inline-flex; align-items: center; gap: 5px; }
+.pine-leaves .icon { width: 20px; height: 20px; color: #829586; fill: none; stroke-width: 1.4; }
+.pine-leaves .lit { fill: #5b8064; color: #345a41; }
+.pine-tally { white-space: nowrap; font-size: 14px; }
+.pine-tally strong { display: inline-block; min-width: 1ch; font: 600 24px/1.2 Georgia, serif; }
+#resultDialog #pineResult { color: #345a41; background: #f2f6ee; padding: 8px 14px; border-radius: 8px; }
+@media (max-width: 720px) {
+  .pine-trail { width: calc(100% - 30px); gap: 8px 18px; margin-top: 12px; padding: 10px 14px; }
+  .pine-copy { width: 100%; }
+  .pine-leaves { margin-right: auto; }
+}

@@ -1,10 +1,10 @@
 .qd-diary {
-  --qd-ink: #233c58;
-  --qd-muted: #52687e;
-  --qd-accent: #285b8e;
-  --qd-edge: #d6e1ec;
-  --qd-tint: #f2f7fc;
-  --qd-surface: #fff;
+  --qd-ink: #34493e;
+  --qd-muted: #34493e;
+  --qd-accent: #34493e;
+  --qd-edge: #e4e9df;
+  --qd-tint: #f7f5ef;
+  --qd-surface: #fbfaf6;
   --qd-radius: 18px;
   color: var(--qd-ink);
   background: var(--qd-surface);

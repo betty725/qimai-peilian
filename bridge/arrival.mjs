@@ -3,7 +3,7 @@ import {mountDiary} from './diary-ui.mjs';
 let arrivalDiary;
 window.addEventListener('qimai-daily-arrival', ({detail}) => {
   const result = document.getElementById('zhihuAtlasResult');
-  if (!result || !detail?.verified || detail.completed?.length !== 3) return;
+  if (!result || !detail?.daily || detail.demo || detail.completed?.length !== 3) return;
   arrivalDiary?.destroy();
   arrivalDiary = undefined;
   result.replaceChildren();

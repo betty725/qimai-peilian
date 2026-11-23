@@ -1,3 +1,5 @@
+import { almanacReading, lunarDate } from './rhythm-reading.mjs';
+
 // The Hong Kong Observatory marks 21 November 2026 as 己亥 (index 35, zero-based).
 // https://www.hko.gov.hk/en/gts/astron2026/files/2026cal11.pdf
 const STEMS = [...'甲乙丙丁戊己庚辛壬癸'];
@@ -28,9 +30,9 @@ export function getDayPillar(iso) {
 
 const MOVES = {
   lift: {
-    name:['交替单举','Alternate palm lift'],
-    cue:['取意八段锦「调理脾胃须单举」。一手从身前缓缓上托，另一手向下伸展，再收回换边。肩膀保持放松。','Inspired by the third Baduanjin form. Float one palm up in front of you as the other reaches down. Lower your arms, then switch sides. Keep the shoulders relaxed.'],
-    pace:['先试左右各一次；觉得轻松，可交替共做 3～6 次。','Try each side once. If comfortable, alternate for 3–6 lifts in total.']
+    name:['调理脾胃须单举','Single palm lift · Baduanjin'],
+    cue:['一手从身前缓缓上托，另一手向下舒展，然后收回换边。肩膀放松，一侧上托一次计一次。','Float one palm up as the other reaches down. Lower your arms and switch sides. Keep your shoulders relaxed. Count each single lift once.'],
+    pace:['左右交替共 3～6 次，本次跟练左右各 2 次，共 4 次。','Alternate for 3–6 lifts in total. This practice uses two lifts on each side, four in all.']
   },
   open: {
     name:['展臂松肩','Open the arms'],
@@ -38,9 +40,9 @@ const MOVES = {
     pace:['舒适范围内做两次，自然呼吸。','Try two easy repetitions with natural breathing.']
   },
   warm: {
-    name:['搓掌覆腰','Warm the palms'],
-    cue:['轻搓双掌，手心微暖后轻轻贴在腰部两侧。手臂放松，停一口气，再把双手放回身前。','Rub your palms together gently. Rest the warm palms on the sides of your waist, pause for an easy breath and bring them forward again.'],
-    pace:['以能轻松触到的位置为准，不用按揉。','Rest your hands wherever they reach comfortably, using light contact.']
+    name:['搓掌揉腰','Warm palms at the waist'],
+    cue:['轻搓双掌，再把手放在容易碰到的腰侧，轻轻上下摩动，最后收回身前。','Gently rub your palms together, then rest them at the sides of your waist. Make small up-and-down strokes and bring your hands back in front.'],
+    pace:['腰侧轻摩两个来回，按自己舒服的幅度做。','Make two small strokes up and down within a comfortable range.']
   },
   reach: {
     name:['左右舒展','Reach to each side'],
@@ -114,55 +116,64 @@ export function takeAtlasOrigin() {
 
 export function recordDailyArrival(detail) {
   return putSessionItem(ARRIVAL_KEY,{at:Date.now(),date:detail.date,source:detail.source,
-    noteId:detail.noteId,partial:detail.partial===true});
+    noteId:detail.noteId,partial:detail.partial===true,verified:detail.verified===true});
 }
 
-// Each finished date has its own idempotent key. Tabs never overwrite a different day's stamp.
+// Separate keys prevent a simultaneous guided completion from downgrading camera proof.
 const STAMP_PREFIX = 'qimai.daily.stamp.v1.';
+const GUIDED_PREFIX = STAMP_PREFIX + 'guided.';
 export function createStampBook(storage) {
-  const days = new Set(), verifiedDays = new Set(), volatile = new Set();
+  const days = new Set(), verifiedDays = new Set(), pending = new Map();
   let writable = Boolean(storage);
   function read() {
     if (!storage) return;
     try {
       const stored = new Set(), verified = new Set();
-      for (let i=0;i<storage.length;i++) {
-        const key=storage.key(i);
-        if (!key?.startsWith(STAMP_PREFIX)) continue;
-        const value=storage.getItem(key);
-        if (value!=='1' && value!=='camera-v1') continue;
-        const day=key.slice(STAMP_PREFIX.length);
-        try { getDayPillar(day); } catch { continue; }
+      function remember(key, value) {
+        const guided = key.startsWith(GUIDED_PREFIX);
+        if (value !== '1' && value !== 'camera-v1') return;
+        const day = key.slice(guided ? GUIDED_PREFIX.length : STAMP_PREFIX.length);
+        try { getDayPillar(day); } catch { return; }
         stored.add(day);
-        if (value==='camera-v1') verified.add(day);
+        if (!guided && value === 'camera-v1') verified.add(day);
       }
+      for (let i=0; i<storage.length; i++) {
+        const key = storage.key(i);
+        if (key?.startsWith(STAMP_PREFIX)) remember(key, storage.getItem(key));
+      }
+      for (const [key, value] of pending) remember(key, value);
       days.clear(); verifiedDays.clear();
-      for (const day of [...stored,...volatile]) days.add(day);
-      for (const day of [...verified,...volatile]) verifiedDays.add(day);
-    } catch { writable=false; }
-  }
-  function earn(day) {
-    getDayPillar(day);
-    try {
-      if (!storage) throw new Error('No storage');
-      storage.setItem(STAMP_PREFIX+day,'camera-v1');
-      volatile.delete(day);
-      writable=volatile.size===0;
-    } catch {
-      writable=false;
-      volatile.add(day);
-    }
-    days.add(day);
-    verifiedDays.add(day);
+      for (const day of stored) days.add(day);
+      for (const day of verified) verifiedDays.add(day);
+    } catch { writable = false; }
   }
   function stems() {
-    return new Set([...days].map(day=>getDayPillar(day).stem));
+    return new Set([...days].map(day => getDayPillar(day).stem));
+  }
+  function earn(day, verified = true) {
+    const {stem} = getDayPillar(day);
+    read();
+    const newStem = !stems().has(stem);
+    const key = (verified ? STAMP_PREFIX : GUIDED_PREFIX) + day;
+    const value = verified ? 'camera-v1' : '1';
+    try {
+      if (!storage) throw new Error('No storage');
+      storage.setItem(key, value);
+      pending.delete(key);
+      writable = pending.size === 0;
+    } catch {
+      writable = false;
+      pending.set(key, value);
+    }
+    days.add(day);
+    if (verified) verifiedDays.add(day);
+    return newStem;
   }
   read();
   return {read,earn,stems,days,verifiedDays,get writable(){return writable;}};
 }
 
-export function mountDaily(root,{language,date,onElement}) {
+export function mountDaily(root,{language,date,birthday,onElement}) {
   let storage;
   try { storage=window.localStorage; } catch { /* Private mode may deny access. */ }
   const book=createStampBook(storage);
@@ -186,12 +197,12 @@ export function mountDaily(root,{language,date,onElement}) {
     const seal='<div class="daily-keepsake '+(earnedToday?'is-lit':'')+'" tabindex="-1" style="--seal-color:'+shown.color+'">'+
       '<div class="daily-enamel" aria-hidden="true"><img src="assets/mascot/liukanshan-body.png" alt=""><b>'+shown.stem+'</b></div>'+
       '<div><strong>'+t(shown.stem+'字看山印',STEM_SOUND[shown.stemIndex]+' · Kanshan stamp')+'</strong><small>'+
-      (arrival?t(shown.date+' · 三式已通过动作检验',shown.date+' · Three movements camera-verified'):
+      (arrival?shown.date+' · '+(arrival.verified?t('三式已通过动作检验','Three movements camera-verified'):t('已完成三式跟练','Three movements completed')):
       earnedToday?t('已点亮','Collected'):t('完成今日三步舒展后点亮','Complete today’s three movements to light it up'))+'</small></div></div>';
     return '<section class="daily-book"><div class="daily-heading"><h3>'+t('十干印册','Ten-stem stamp book')+'</h3><span>'+collected.size+' / 10</span></div>'+
-      '<p>'+t('六十种日柱轮转，印记按十个日干收集。完成三步，收下今天这一枚。','Day pillars recur every 60 days. Collect their ten stems by completing the three movements on different days.')+'</p>'+
+      '<p>'+t('六十种日柱，按十个天干集印。当天三式练完，点亮一枚；同一个天干只收一次。','Day pillars recur every 60 days. Collect their ten stems by completing the three movements on different days.')+'</p>'+
       seal+'<ul class="daily-stamps">'+cells+'</ul>'+
-      '<p class="daily-achievement '+(achievement?'daily-full':'')+'">'+(achievement?t('已解锁看山纪念章「五行通畅」','Unlocked · Kanshan’s Five Phases keepsake'):t('集齐十枚，解锁看山纪念章「五行通畅」。','Collect all ten to unlock Kanshan’s Five Phases keepsake.'))+'</p>'+
+      '<p class="daily-achievement '+(achievement?'daily-full':'')+'">'+(achievement?t('成就已解锁 · 你的看山五行通畅','Unlocked · Kanshan’s Five Phases keepsake'):t('集齐十枚，解锁「你的看山五行通畅」。','Collect all ten to unlock Kanshan’s Five Phases keepsake.'))+'</p>'+
       '<small class="daily-local">'+(book.writable?t('印记只保存在当前浏览器。','Stamps are saved in this browser.'):t('浏览器存储不可用，本次新增印记仅在本页保留。','Browser storage is unavailable. New stamps may last only until you close this page.'))+'</small></section>';
   }
 
@@ -201,31 +212,42 @@ export function mountDaily(root,{language,date,onElement}) {
     const route=getDailyMoves(today.date);
     const collected=book.days.has(today.date);
     const verified=book.verifiedDays.has(today.date);
-    const explain=t('日干属'+today.element+'，在传统五行中与'+today.organ+'相配。','The '+STEM_SOUND[today.stemIndex]+' stem belongs to '+today.en+', traditionally paired with the '+today.organEn+'.');
-    const title=t(today.pillar+'日',today.pinyin+' · '+today.pillar);
-    const status=verified?
-      t('今日三式已通过摄像头动作检验，'+today.stem+'字印已点亮。','All three movements passed the camera check today. Your stamp is lit.'):
-      collected?t('已保留旧版跟练印记，今天可再做一次摄像头小练。','Your earlier stamp is saved. You can try today’s camera practice.'):'';
-    const practice='<p class="daily-route">'+route.map(m=>text(m.name)).join(' · ')+'</p>'+
-      '<p>'+t('跟着刘看山做三式舒展。摄像头会在本机观察动作、提示调整，三式通过后收下今日印。请按舒适幅度练习。','Follow Kanshan through three movements. The camera checks your movement on this device and offers adjustments. Complete all three checks to collect today’s stamp. Move within a comfortable range.')+'</p>'+
+    const en=language()==='en';
+    const reading=almanacReading(today,en);
+    const lunar=lunarDate(today.date,en);
+    const birthISO=birthday?.();
+    const born=birthISO ? getDayPillar(birthISO) : null;
+    const compare=born ? '<p id="rhythm-birth" class="daily-birth">'+t('我的生日日柱 · '+born.pillar+'（'+born.element+'）','My birth-day pillar · '+born.pillar+' ('+born.en+')')+'</p>' : '';
+    const status=verified?t('今日三式已通过摄像头检验。','All three movements were camera-verified today.'):
+      collected?t('今日三式已完成。','You completed today’s three movements.'):'';
+    const signNote=today.pillar==='己亥'
+      ? '<p class="almanac-note">'+t('古人用「土克水」描述这对五行。本签借己土配脾之意选单举，中间舒展两侧，再借亥水配肾之意，以轻揉腰侧收势。',
+        'The traditional reading pairs Earth with Water in the restraining cycle. This routine echoes the Earth–Spleen theme with a single palm lift, opens out to both sides, then closes with a light waist rub inspired by the Water–Kidney theme.')+'</p>' : '';
+    const href='./?practice=daily&amp;from=atlas&amp;day='+today.date;
+    const moves=route.map(move=>'<li><strong>'+text(move.name)+'</strong><span>'+text(move.pace)+'</span></li>').join('');
+    const practice='<div class="daily-practice"><h3>'+t('今日三式','Today’s three movements')+'</h3><ol class="almanac-moves">'+moves+'</ol>'+
       (partialExit?'<p class="daily-completed" role="status">'+t('本次已记入练习日记。','Your practice was saved to your diary.')+
         ' <a href="./?view=diary">'+t('翻开练习日记','Open practice diary')+'</a></p>':'')+
       (status?'<p class="daily-completed" role="status">'+status+'</p>':'')+
-      '<div class="daily-actions"><a data-daily="start" class="daily-btn daily-primary" href="./?practice=daily&amp;from=atlas&amp;day='+today.date+'">'+
-      (verified?t('再做一次摄像头陪练','Repeat camera practice'):t('进入摄像头陪练','Start camera practice'))+'</a></div>';
+      '<div class="daily-actions"><a data-daily="start" class="daily-btn daily-primary" href="'+href+'&amp;mode=guided">'+
+        (collected?t('再练一次','Practice again'):t('跟看山练三式','Practice with Kanshan'))+'</a>'+
+      '<a data-daily="camera" class="daily-btn daily-secondary" href="'+href+'">'+t('摄像头检验','Camera check')+'</a></div></div>';
     const previous=root.contains(document.activeElement)?document.activeElement.dataset.daily:undefined;
     const resultHost=root.querySelector('#zhihuAtlasResult')||document.createElement('div');
     if(!resultHost.id){resultHost.id='zhihuAtlasResult';resultHost.hidden=true;}
-    root.innerHTML='<div class="daily-layout"><section class="daily-sheet"><div class="daily-heading"><h3>'+t('今日干支','Today’s day pillar')+'</h3><span>'+today.date+' · UTC+8</span></div>'+
-      '<div class="daily-pillar"><strong>'+title+'</strong>'+button('meridian',t('看'+today.organ+'经','View '+today.organEn+' meridian'),'daily-link')+'</div>'+
-      '<p>'+explain+' '+t('今天借这个主题做一组工位舒展。','Use today’s theme for a short desk break.')+'</p>'+
-      '<div class="daily-practice">'+practice+'</div></section>'+stampGrid(today)+'</div>';
+    root.innerHTML='<div class="daily-layout"><section class="daily-sheet">'+
+      '<header class="almanac-head"><div><p class="almanac-date"><time datetime="'+today.date+'">'+today.date+'</time>'+
+      (lunar?' · '+lunar:'')+'</p><h2 id="rhythm-title" tabindex="-1">'+t(today.pillar+'日',today.pinyin+' · '+today.pillar)+'</h2></div>'+
+      button('meridian',t('看'+today.organ+'经','View '+today.organEn+' meridian'),'daily-link')+'</header>'+
+      '<p class="almanac-theme"><b>'+t('宜','Try')+'</b><strong>'+reading.theme+'</strong></p>'+
+      '<p class="almanac-origin">'+t('传统五行 · ','Traditional correspondences · ')+reading.stems+'</p>'+signNote+compare+
+      practice+'</section>'+stampGrid(today)+'</div>';
     if(resultHost)root.querySelector('.daily-book')?.append(resultHost);
     const target = focus || previous;
     if (target) root.querySelector('[data-daily="'+target+'"]')?.focus({preventScroll:true});
   }
   function onClick(event) {
-    const start=event.target.closest('a[data-daily="start"]');
+    const start=event.target.closest('a[data-daily="start"], a[data-daily="camera"]');
     if(start&&!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey&&!event.defaultPrevented)
       putSessionItem(DEPARTURE_KEY,{at:Date.now(),url:location.href});
     const action=event.target.closest('button[data-daily]')?.dataset.daily;
@@ -247,10 +269,11 @@ export function mountDaily(root,{language,date,onElement}) {
       if(previousResult)previousResult.hidden=true;
       render();
       window.dispatchEvent(new CustomEvent('qimai-daily-return'));
-    }else if(fresh&&book.verifiedDays.has(received.date)){
+    }else if(fresh&&book.days.has(received.date)){
+      const verified=received.verified!==false && book.verifiedDays.has(received.date);
       partialExit=false;
-      arrival={daily:true,verified:true,demo:false,noteId:typeof received.noteId==='string'?received.noteId:null,date:received.date,source:received.source,
-        completed:getDailyMoves(received.date).map(m=>({id:m.id,name:m.name[0],verified:true}))};
+      arrival={daily:true,verified,demo:false,noteId:typeof received.noteId==='string'?received.noteId:null,date:received.date,source:received.source,
+        completed:getDailyMoves(received.date).map(m=>({id:m.id,name:m.name[0],verified}))};
       render();
       window.dispatchEvent(new CustomEvent('qimai-daily-return'));
       const seal=root.querySelector('.daily-keepsake');

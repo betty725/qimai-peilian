@@ -19,7 +19,7 @@
     if(canvas.width!==Math.round(w*ratio)||canvas.height!==Math.round(h*ratio)){canvas.width=Math.round(w*ratio);canvas.height=Math.round(h*ratio);}
     const c=canvas.getContext('2d');c.setTransform(ratio,0,0,ratio,0,0);c.clearRect(0,0,w,h);
     const scene=equipped.scene;
-    const palette=scene==='sunset'?['#fbf1eb','#f2d8cf','#d9a99d']:scene==='moon'?['#ececfa','#d9def2','#a5aed5']:['#edf5ff','#deedf9','#aac9e4'];
+    const palette=scene==='sunset'?['#fbf1eb','#f2d8cf','#d9a99d']:scene==='moon'?['#ececfa','#d9def2','#a5aed5']:['#f7f5ef','#eaece1','#a4b0a0'];
     const bg=c.createLinearGradient(0,0,w,h);bg.addColorStop(0,palette[0]);bg.addColorStop(1,palette[1]);c.fillStyle=bg;c.fillRect(0,0,w,h);
     const circle=(x,y,r,color)=>{c.fillStyle=color;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();};
     if(!options.preview){

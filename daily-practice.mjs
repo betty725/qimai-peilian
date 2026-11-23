@@ -11,7 +11,7 @@ const side=(left,lift)=>pose(left?{
 }:{
   14:lift?[.66,.21]:[.76,.36],16:lift?[.62,.075]:[.91,.35]
 });
-const waist=()=>pose({13:[.32,.48],14:[.68,.48],15:[.40,.57],16:[.60,.57]});
+const waist=(offset=0)=>pose({13:[.32,.48],14:[.68,.48],15:[.40,.57+offset],16:[.60,.57+offset]});
 const lowerSides=()=>pose({13:[.34,.50],14:[.66,.50],15:[.35,.64],16:[.65,.64]});
 const thighs=()=>pose({13:[.32,.51],14:[.68,.51],15:[.38,.67],16:[.62,.67]});
 const rub=up=>pose({13:[.32,.47],14:[.68,.47],15:[.487,up?.39:.44],16:[.513,up?.44:.39]});
@@ -21,17 +21,18 @@ const shoulder=(lift,spread)=>pose({
 });
 
 const paths={
-  lift:[rest,()=>side(true,true),rest,()=>side(false,true),rest],
+  lift:[rest,()=>side(true,true),rest,()=>side(false,true),rest,()=>side(true,true),rest,()=>side(false,true),rest],
   reach:[rest,()=>side(true,false),rest,()=>side(false,false),rest],
   open:[front,open,front,open,front],
-  warm:[front,()=>rub(true),()=>rub(false),()=>rub(true),()=>rub(false),()=>rub(true),()=>rub(false),waist,waist,front],
+  warm:[front,()=>rub(true),()=>rub(false),()=>rub(true),()=>rub(false),()=>rub(true),()=>rub(false),
+    ()=>waist(),()=>waist(.025),()=>waist(),()=>waist(.025),()=>waist(),front],
   shoulder:[rest,()=>shoulder(.055,0),()=>shoulder(.032,.018),rest,()=>shoulder(.055,0),()=>shoulder(.032,.018),rest],
   settle:[front,mode=>mode==='seated'?thighs():lowerSides(),mode=>mode==='seated'?thighs():lowerSides()]
 };
-const durations={lift:10,reach:10,open:8,warm:9,shoulder:7,settle:6,wrists:10};
+const durations={lift:20,reach:10,open:8,warm:12,shoulder:7,settle:6,wrists:10};
 const quickCues={
-  lift:'先放下双手，再交替上托，每次回到身侧。',reach:'一手向同侧伸出，收回，再换另一边。',
-  open:'从胸前展开双臂，再合回，慢慢做两次。',warm:'在胸前轻搓双掌，贴近腰侧稍停，再收回。',
+  lift:'左右交替上托，每次回到身侧。左右各两次，共四次。',reach:'一手向同侧伸出，收回，再换另一边。',
+  open:'从胸前展开双臂，再合回，慢慢做两次。',warm:'轻搓双掌，贴在腰侧上下轻摩两个来回，再收回。',
   shoulder:'放下双手，肩膀缓缓提起、向后、落下，做两圈。',settle:'双手从胸前缓缓落下，放松停稳。',
   wrists:'双肘靠近身体，双腕慢慢画小圈，顺逆各两圈。'
 };

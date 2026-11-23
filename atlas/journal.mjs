@@ -2,7 +2,7 @@ import {mountDaily} from './daily.mjs';
 import {mountConstitution} from './constitution.mjs';
 
 const sections = ['daily','constitution'];
-export function mountJournal({language,date,onElement}) {
+export function mountJournal({language,date,birthday,onElement}) {
   const container = document.getElementById('field-journal');
   const panels = new Map(sections.map(key => [key,document.getElementById(key)]));
   const tabs = new Map(sections.map(key => [key,document.getElementById('tab-'+key)]));
@@ -22,8 +22,8 @@ export function mountJournal({language,date,onElement}) {
     if(location.hash!=='#map')history.pushState(null,'','#map');
     onElement(element);
   }
-  const daily=mountDaily(panels.get('daily'),{
-    language,date,onElement:showElement
+  const daily=mountDaily(document.getElementById('rhythm-result'),{
+    language,date,birthday,onElement:showElement
   });
   const constitution=mountConstitution(panels.get('constitution'),{
     language,onDaily:()=>navigate('daily',{record:true,focus:true,scroll:true})
@@ -45,7 +45,7 @@ export function mountJournal({language,date,onElement}) {
     e.preventDefault();navigate('daily',{record:true,focus:true,scroll:true});
   });
   function followHash(){
-    if(location.hash==='#tones') history.replaceState(history.state,'','#daily');
+    if(['#tones','#rhythm-result'].includes(location.hash)) history.replaceState(history.state,'','#daily');
     const key=location.hash.slice(1);
     if(panels.has(key))navigate(key,{scroll:true});
   }
@@ -58,5 +58,5 @@ export function mountJournal({language,date,onElement}) {
   function render(){
     daily.render();constitution.render();
   }
-  return {render};
+  return {render,openDaily:()=>navigate('daily',{focus:true,scroll:true,record:true})};
 }

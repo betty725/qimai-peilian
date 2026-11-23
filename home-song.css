@@ -13,37 +13,6 @@
   --home-song: "Songti SC", SimSun, "Noto Serif CJK SC", "Noto Serif SC", serif;
 }
 
-body:has(#home:not([hidden])) {
-  --home-gutter: clamp(24px, 6.15vw, 112px);
-  --home-nav-height: 76px;
-  background: var(--home-paper);
-}
-
-body:has(#home:not([hidden])) .topbar {
-  background: transparent;
-  border: 0;
-  color: var(--home-muted);
-}
-
-body:has(#home:not([hidden])) .sidebar .nav.active {
-  color: var(--home-red);
-}
-
-body:has(#home:not([hidden])) .home-settings-label {
-  display: inline;
-}
-
-body:has(#home:not([hidden])) #quickSettings {
-  width: auto;
-  min-width: 42px;
-  color: var(--home-muted);
-  font: 600 16px var(--home-song);
-}
-
-body:has(#home:not([hidden])) #quickSettings .icon {
-  display: none;
-}
-
 #home {
   color: var(--home-ink);
 }
@@ -301,91 +270,6 @@ body:has(#home:not([hidden])) #quickSettings .icon {
   outline-offset: 4px;
 }
 
-@media (min-width: 721px) {
-  body:has(#home:not([hidden])) .sidebar {
-    display: grid;
-    grid-template-columns: minmax(140px, 1fr) auto minmax(78px, 0.7fr);
-    align-items: stretch;
-    position: relative;
-    inset: auto;
-    margin: 0 var(--home-gutter);
-    padding: 0;
-    width: auto;
-    height: var(--home-nav-height);
-    background: var(--home-paper);
-    border: 0;
-    border-bottom: 1px solid var(--home-rule);
-    z-index: 5;
-  }
-
-  body:has(#home:not([hidden])) .sidebar .brand {
-    align-self: center;
-    margin: 0;
-    color: var(--home-ink);
-    font: 700 clamp(22px, 1.9vw, 34px) / 1.2 var(--home-song);
-    letter-spacing: 0.09em;
-  }
-
-  body:has(#home:not([hidden])) .sidebar :is(.brand-icon, .brand small, .sidebar-bottom, .nav .icon),
-  body:has(#home:not([hidden])) .sidebar .nav:not(.active)::after {
-    display: none;
-  }
-
-  body:has(#home:not([hidden])) .sidebar nav {
-    display: flex;
-    flex-direction: row;
-    gap: clamp(13px, 3.6vw, 55px);
-    align-items: stretch;
-  }
-
-  body:has(#home:not([hidden])) .sidebar .nav {
-    position: relative;
-    white-space: nowrap;
-    justify-content: center;
-    padding: 0;
-    border-radius: 0;
-    background: transparent;
-    font: 600 clamp(14px, 1.3vw, 20px) / 1.2 var(--home-song);
-    color: var(--home-muted);
-  }
-
-  body:has(#home:not([hidden])) .sidebar .nav:is(.active, :hover) {
-    color: var(--home-red);
-  }
-
-  body:has(#home:not([hidden])) .sidebar .nav.active::after {
-    position: absolute;
-    inset: auto 0 0;
-    width: auto;
-    height: 2px;
-    margin: 0;
-    border-radius: 0;
-    background: var(--home-red);
-  }
-
-  body:has(#home:not([hidden])) .workspace {
-    margin: 0;
-  }
-
-  body:has(#home:not([hidden])) .workspace main {
-    max-width: none;
-    padding: 0 var(--home-gutter) 60px;
-  }
-
-  body:has(#home:not([hidden])) .topbar {
-    position: absolute;
-    z-index: 6;
-    right: var(--home-gutter);
-    top: 0;
-    height: var(--home-nav-height);
-    padding: 0;
-  }
-
-  body:has(#home:not([hidden])) :is(.topbar .event-brand, .topbar .wallet > :not(#quickSettings)) {
-    display: none;
-  }
-}
-
 @media (max-width: 900px) {
   #home .mode-grid {
     width: 100%;
@@ -393,35 +277,6 @@ body:has(#home:not([hidden])) #quickSettings .icon {
 }
 
 @media (max-width: 720px) {
-  body:has(#home:not([hidden])) .sidebar {
-    background: var(--home-paper);
-    border-color: var(--home-rule);
-  }
-
-  body:has(#home:not([hidden])) .sidebar .nav.active {
-    background: #eee8df;
-  }
-
-  body:has(#home:not([hidden])) .workspace main {
-    padding-top: 0;
-  }
-
-  body:has(#home:not([hidden])) .topbar {
-    margin-inline: 18px;
-    padding: 0;
-    border-bottom: 1px solid var(--home-rule);
-  }
-
-  body:has(#home:not([hidden])) .topbar .event-brand {
-    display: none;
-  }
-
-  body:has(#home:not([hidden])) .home-brand-label {
-    display: block;
-    font: 700 23px var(--home-song);
-    color: var(--home-ink);
-  }
-
   #home .welcome {
     grid-template-columns: minmax(0, 1fr) minmax(80px, 0.48fr);
     min-height: 0;

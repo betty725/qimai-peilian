@@ -4,7 +4,7 @@
   min-height:40px;padding:5px 14px;background:#faf4e5;color:#665d47;
   border-block:1px solid #e6dbc2;font:500 .875rem/1.35 system-ui,sans-serif
 }
-#dailyRibbon span:nth-of-type(3){color:#2d4b44;font-weight:700}
+#dailyRibbon span:nth-of-type(3){color:#272c28;font-weight:700}
 #dailyRibbon i {width:14px;height:1px;background:#c3b99f}
 #dailyInk {display:inline-grid;place-items:center;width:24px;height:24px;
   border:1px solid #9c614c;color:#884d3a;border-radius:4px;font:600 1rem/1 serif}

@@ -24,7 +24,7 @@
     circle: ['双肘靠近身体，让两只手在镜头前慢慢画小圈。', 'Keep both elbows close and trace small circles with both hands facing the camera.'],
     reverse: ['换个方向，两只手都慢慢画小圈。', 'Reverse direction and draw small circles with both hands.'],
     rub: ['两手靠在一起，在胸腹前轻轻来回搓动几下。', 'Hold your palms close in front of you and gently rub them back and forth.'],
-    waist: ['轻轻将双手分开放到腰部两侧，并停稳一下。', 'Separate your hands, rest them at the sides of your waist and pause there.'],
+    waist: ['把双手放在腰部两侧，小幅上下轻摩两个来回。', 'Rest your palms at the sides of your waist and make two small up-and-down strokes.'],
     back: ['把两只手从腰侧收回身前靠拢。', 'Bring both hands together again in front of your body.'],
     done: ['已识别本式动作。', 'Movement recognised.']
   };
@@ -32,7 +32,7 @@
     shoulder: ['shouldersDown', 'shouldersUp', 'shouldersReturn', 'shouldersUp', 'shouldersReturn'],
     open: ['closed', 'opened', 'closed', 'opened', 'closed'],
     settle: ['front', 'lower', 'still'],
-    lift: ['neutral', 'lift', 'neutral', 'liftOther', 'neutral'],
+    lift: ['neutral', 'lift', 'neutral', 'liftOther', 'neutral', 'liftOther', 'neutral', 'liftOther', 'neutral'],
     reach: ['neutral', 'reach', 'neutral', 'reachOther', 'neutral'],
     wrists: ['circle', 'reverse'],
     warm: ['rub', 'waist', 'back']
@@ -99,7 +99,7 @@
     const sequence = sequences[moveId];
     if (!sequence) throw new RangeError('Unknown daily movement');
     const seated = mode === 'seated' || mode === 'sitting';
-    let step, lastTime, lastValid, hold, ref, firstSide, loops, strokes, fraction, result;
+    let step, lastTime, lastValid, hold, ref, lastSide, loops, strokes, fraction, result;
     const stage = () => sequence[step];
     const defaultCue = () => stage() === 'lower' ? (seated ? 'lowerSeated' : 'lowerStanding') : stage() || 'done';
     function report(key, tracking) {
@@ -114,7 +114,7 @@
       if (loops) for (const hand of loops) hand.samples = [];
     }
     function reset() {
-      step = 0; lastTime = -Infinity; lastValid = -Infinity; ref = null; firstSide = null;
+      step = 0; lastTime = -Infinity; lastValid = -Infinity; ref = null; lastSide = null;
       loops = [0, 1].map(() => ({samples: [], direction: 0, count: 0}));
       clearMotion();
       return report(defaultCue(), false);
@@ -239,7 +239,7 @@
             });
             if (sides.length === 1) {
               observedSide = sides[0];
-              ok = !sh.endsWith('Other') || observedSide !== firstSide;
+              ok = !sh.endsWith('Other') || observedSide !== lastSide;
             }
             break;
           }
@@ -251,7 +251,7 @@
           case 'back': ok = both(w,p => p.y >= -.28 && p.y < .96 && Math.abs(p.x) < .48) && gap(w[0],w[1]) < .52; break;
         }
         if (ok && held(sh + observedSide,now,duration)) {
-          if (sh === 'lift' || sh === 'reach') firstSide = observedSide;
+          if (observedSide >= 0) lastSide = observedSide;
           if (sh === 'front') ref = {start:w,rest:null};
           if (sh === 'lower') ref.rest = w;
           advance();

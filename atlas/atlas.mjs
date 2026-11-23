@@ -5,19 +5,20 @@ import { points } from './meridian-data.mjs';
 const byId = id => document.getElementById(id);
 const put = (id, value) => { byId(id).textContent = value; };
 const enCopy = {
+  almanacDetails:'Solar terms and birth-year movement',
   browseScrolls:'Browse scrolls',scrollTitle:'The 24 solar term scrolls',scrollPrev:'Previous',scrollNext:'Next',
   dayPillarSource:'Hong Kong Observatory · November 2026 day pillars',movementSource:'General Administration of Sport of China · Baduanjin',
-  toJournal:'Open today’s journal', journalHeading:'Kanshan’s wellness journal', dailyTab:'Daily movement', constitutionTab:'Self check-in',
-  skip:'Skip to the meridian atlas',brand:'Qimai',back:'Back to practice',edition:'Kanshan’s Seasonal Journal',
-  title:'A Seasonal Meridian Atlas',intro:'Explore the five phases and trace a point with Kanshan.',termNow:'Solar term',
+  toVitality:'View Kanshan’s vitality', toJournal:'Open today’s practice almanac', dailyTab:'Today’s practice almanac', constitutionTab:'Self check-in',
+  skip:'Skip to today’s practice almanac',brand:'Qimai',back:'Back to practice',edition:'Solar terms & day pillars',
+  title:'Kanshan’s Rhythm Journal',intro:'Follow three movements inspired by today’s day pillar and collect the ten stem stamps with Kanshan.',termNow:'Solar term',
   todayRead:'Seasonal phase',birthTerm:'Solar term at birth',birthMove:'Birth-year movement',
-  culture:'Traditional correspondences are cultural concepts. Dates cannot tell us how an organ is functioning or what caused a mood.',
+  culture:'The five phases inspire the movement themes. A day pillar cannot determine your constitution. Move within a comfortable range.',
   atlasKicker:'Meridians & points',atlasTitle:'Kanshan’s meridian map',atlasHint:'Choose a phase or tap a point on Kanshan.',
   modelLabel:'3D meridian map',rotateHint:'Drag to rotate',front:'Front',where:'On the human body',observe:'What to look for',
   modelNote:'Kanshan shows approximate relationships. Refer to the written landmarks and standard atlas for human anatomy.',
   method:'Calendar, sources & further reading',follow:'Each of the five organ traditions is represented by one meridian and one point. The figure traces selected surface segments.',
   hko:'Hong Kong Observatory · The 24 Solar Terms',bucm:'Beijing University of Chinese Medicine · Organs and seasonal cycles in the Neijing',gb:'Chinese national standard · Nomenclature and location of meridian points',who:'WHO · Standard acupuncture point locations in the Western Pacific Region',classic:'On Seasonal Diseases · The Five Movements and Six Qi',zhihu:'Read on Zhihu · Lung and Large Intestine Meridians (Chinese)',
-  birthKicker:'Your seasonal note',birthdayTitle:'Which solar term welcomed you?',birthdayInfo:'Enter your Gregorian birthday to explore its solar term and annual movement.',birthdayLabel:'Date of birth',privacy:'Your date is calculated in this page. It is never saved or sent.',create:'Open my seasonal note',clear:'Clear birthday'
+  birthKicker:'Birth-day pillar',birthdayTitle:'What is your date of birth?',birthdayInfo:'Add your Gregorian birthday to compare your birth-day pillar with today’s.',birthdayLabel:'Date of birth',privacy:'Your date is calculated in this page. It is never saved or sent.',create:'Compare day pillars',clear:'Clear birthday'
 };
 const texts = [...document.querySelectorAll('[data-t]')].map(el => [el,el.textContent]);
 const englishElements = {木:'Wood',火:'Fire',土:'Earth',金:'Metal',水:'Water'};
@@ -31,6 +32,58 @@ let today = todayInChina(), birthday = '', reading = getSeasonReading(today);
 let journal;
 let selected = pointForElement(reading.season.element), yaw = 0, model, modelFailed = false;
 const t = (zh,en) => lang === 'en' ? en : zh;
+const mapButton = byId('meridian-map');
+const mapContent = byId('meridian-content');
+const mapPreferenceKey = 'qimai.atlas.mapOpen.v1';
+let modelStarted = false;
+
+function renderMapAction() {
+  put('map-action', mapContent.hidden ? t('展开经络图','Show meridian map') : t('收起经络图','Hide meridian map'));
+  mapButton.setAttribute('aria-expanded', String(!mapContent.hidden));
+}
+
+async function loadModel() {
+  if (modelStarted) return;
+  modelStarted = true;
+  try {
+    const {createMeridianModel} = await import('./meridian-model.mjs');
+    model = createMeridianModel(byId('model'), {
+      onSelect: id => selectPoint(id, false),
+      onViewChange: angle => { yaw = angle; renderView(); }
+    });
+    model.select(selected.id);
+  } catch {
+    modelFailed = true;
+    renderView();
+    byId('model').hidden = true;
+    const fallback = document.createElement('img');
+    fallback.alt = '刘看山 · Kanshan';
+    fallback.className = 'model-fallback';
+    fallback.src = 'assets/gif/idle.gif';
+    byId('model').after(fallback);
+    document.querySelector('.plate-controls').hidden = true;
+  }
+}
+
+function showMap(open) {
+  mapContent.hidden = !open;
+  renderMapAction();
+  if (open) loadModel();
+}
+
+const isMapLink = () => ['#map', '#meridian-map', '#picker', '#model'].includes(location.hash);
+mapButton.addEventListener('click', () => {
+  const open = mapContent.hidden;
+  showMap(open);
+  try { localStorage.setItem(mapPreferenceKey, String(open)); } catch { /* Private browsing */ }
+  if (!open && isMapLink()) history.replaceState(history.state, '', '#vitalityPanel');
+});
+window.addEventListener('hashchange', () => {
+  if (isMapLink()) {
+    showMap(true);
+    mapButton.scrollIntoView({block:'start'});
+  }
+});
 
 const scrolls = mountScrolls();
 function renderSeason() {
@@ -42,7 +95,7 @@ function renderSeason() {
   put('today-point',t('读'+season.organ+'经','Explore '+englishOrgans[season.organ]));
   put('china-date',t('中国历日 ','China calendar ')+today+'  ·  UTC+8');
   put('host-qi',t('主气 · '+hostQi.name,'Host qi · '+hostQi.en));
-  put('birth-action',birth ? t('修改我的生辰','Edit my birthday') : t('填写生辰，展笺','Add my birthday'));
+  put('birth-action',birth ? t('修改生日','Edit birthday') : t('对照我的生日日柱','Compare my birth-day pillar'));
   put('birth-term',birth ? t(birth.term.name,birth.term.en) : t('待展笺','Not entered'));
   put('birth-term-note',birth ? birth.date : t('依出生月日查节气','Based on month and day'));
   put('birth-move',birth ? t(birth.stemBranch+' · '+birth.movement.element+'运',birth.stemBranch+' · '+birth.movement.en) : t('待展笺','Not entered'));
@@ -102,11 +155,11 @@ function renderView() {
   put('view-label',modelFailed?t('静态预览','Still preview') : dir+' · '+Math.round(abs)+'°');
 }
 function renderLanguage() {
-  document.documentElement.lang=t('zh-CN','en');document.title=t('时令经络图鉴 · 气脉陪练','A Seasonal Meridian Atlas · Qimai');
+  document.documentElement.lang=t('zh-CN','en');document.title=t('看山节律手记 · 气脉陪练','Kanshan’s Rhythm Journal · Qimai');
   texts.forEach(([el,zh]) => {el.textContent=t(zh,enCopy[el.dataset.t]);});
   byId('lang-zh').setAttribute('aria-pressed',String(lang==='zh'));byId('lang-en').setAttribute('aria-pressed',String(lang==='en'));
   for (const [id,zh,en] of [['model','可旋转的刘看山经络模型，用左右方向键旋转','Rotatable Kanshan meridian model. Use the left and right arrow keys.'],['left-view','向左转','Rotate left'],['right-view','向右转','Rotate right'],['picker','五行经络','Select a meridian by phase'],['cancel-birth','关闭','Close']]) byId(id).setAttribute('aria-label',t(zh,en));
-  renderSeason();renderPoint();renderView();journal?.render();
+  renderSeason();renderPoint();renderView();renderMapAction();journal?.render();
 }
 for (const l of ['zh','en']) byId('lang-'+l).addEventListener('click',()=>{
   lang=l;const url=new URL(location.href);
@@ -114,8 +167,9 @@ for (const l of ['zh','en']) byId('lang-'+l).addEventListener('click',()=>{
   history.replaceState(null,'',url);renderLanguage();
 });
 function openPoint(element) {
+  showMap(true);
   selectPoint(pointForElement(element).id);
-  byId('map').scrollIntoView({block:'start'});picks.get(selected.id).btn.focus({preventScroll:true});
+  mapButton.scrollIntoView({block:'start'});picks.get(selected.id).btn.focus({preventScroll:true});
 }
 byId('today-point').addEventListener('click',()=>openPoint(reading.season.element));
 byId('birth-point').addEventListener('click',()=>{if(reading.birth)openPoint(reading.birth.movement.element);});
@@ -123,6 +177,7 @@ function refreshDate() {
   const next=todayInChina();
   if(next===today)return;
   today=next;reading=getSeasonReading(today,birthday);input.max=today<MAX_DATE?today:MAX_DATE;renderSeason();journal?.render();
+  window.dispatchEvent(new Event('qimai-atlas-day-change'));
 }
 function clearError() {put('birth-error','');input.removeAttribute('aria-invalid');}
 input.min=MIN_DATE;input.max=today<MAX_DATE?today:MAX_DATE;
@@ -141,9 +196,10 @@ byId('birth-form').addEventListener('submit',e=>{
     input.setAttribute('aria-invalid','true');input.focus();return;
   }
   birthday=value;renderSeason();modal.close();
+  journal?.render();journal?.openDaily();
 });
 byId('clear-birth').addEventListener('click',()=>{
-  birthday='';input.value='';clearError();reading=getSeasonReading(today);renderSeason();modal.close();
+  birthday='';input.value='';clearError();reading=getSeasonReading(today);renderSeason();journal?.render();modal.close();
 });
 byId('left-view').addEventListener('click',()=>model?.rotate(-30));
 byId('right-view').addEventListener('click',()=>model?.rotate(30));
@@ -151,19 +207,13 @@ byId('reset-view').addEventListener('click',()=>model?.reset());
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshDate();});
 window.addEventListener('pageshow',refreshDate);window.setInterval(refreshDate,60000);
 renderLanguage();
-try {
-  const {createMeridianModel}=await import('./meridian-model.mjs');
-  model=createMeridianModel(byId('model'),{onSelect:id=>selectPoint(id,false),onViewChange:angle=>{yaw=angle;renderView();}});
-  model.select(selected.id);
-} catch {
-  modelFailed=true;renderView();byId('model').hidden=true;
-  const fallback=document.createElement('img');fallback.alt='刘看山 · Kanshan';fallback.className='model-fallback';fallback.src='assets/gif/idle.gif';
-  byId('model').after(fallback);document.querySelector('.plate-controls').hidden=true;
-}
+let savedMapOpen = false;
+try { savedMapOpen = localStorage.getItem(mapPreferenceKey) === 'true'; } catch { /* Private browsing */ }
+showMap(isMapLink() || savedMapOpen);
 
 // Load the journal independently so the original calendar and atlas stay usable.
 import('./journal.mjs').then(({mountJournal}) => {
-  journal=mountJournal({language:()=>lang,date:todayInChina,onElement:openPoint});
+  journal=mountJournal({language:()=>lang,date:todayInChina,birthday:()=>birthday,onElement:openPoint});
 }).catch(() => {
   byId('daily').textContent=t('手记未能载入，请刷新后再试。','The journal did not load. Please refresh to try again.');
 });

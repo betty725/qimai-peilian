@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg"><defs>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10 12 3l9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></symbol>
+<symbol id="i-journey" viewBox="0 0 24 24"><path d="M4 20h16M3 16l6-10 4 7 3-4 5 7M9 6V2m0 0h5l-2 2H9"/></symbol>
+<symbol id="i-wardrobe" viewBox="0 0 24 24"><path d="m8 4-5 3 3 6 2-1v9h8v-9l2 1 3-6-5-3c0 4-8 4-8 0Z"/></symbol>
+<symbol id="i-friends" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m15-7a4 4 0 0 1 5 4v3M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm4-3a4 4 0 0 1 0 8"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M12 5v16M3 4c3-1 6-1 9 1 3-2 6-2 9-1v16c-3-1-6-1-9 1-3-2-6-2-9-1Z"/></symbol>
+</defs></svg>

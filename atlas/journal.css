@@ -23,5 +23,45 @@
   background: var(--paper);
   border-radius: 10px;
 }
-#zhihuAtlasResult textarea { background: #fcfff8; }
+#zhihuAtlasResult textarea { background: #fbfaf6; }
 #zhihuAtlasResult .qs-primary:hover { background: var(--deep); }
+
+/* A single paper spread: today's almanac and its collectible seal. */
+.cover .field-journal { margin:0; padding:0; background:var(--paper); }
+.cover .journal-tabs { margin:0; padding:0 clamp(16px,3vw,40px); gap:16px; }
+.cover .journal-tabs button { min-width:0; flex:none; padding:13px 2px 10px; }
+.cover .journal-tabs button[aria-selected=true] { color:var(--red); border-color:var(--red); background:transparent; }
+.cover #constitution { padding:clamp(16px,3vw,32px); }
+.cover .daily-layout { border:0; border-radius:0; grid-template-columns:minmax(0,1.25fr) minmax(0,.85fr); }
+.daily-layout .daily-sheet,.daily-layout .daily-book { padding:clamp(20px,3.1vw,42px); }
+.daily-layout .daily-book { background:#f2f0e8; }
+.almanac-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.daily-sheet .almanac-date { margin:0 0 4px; color:var(--muted); font-size:.86rem; letter-spacing:.035em; }
+.almanac-head h2 { font:600 clamp(2.25rem,4vw,3.1rem)/1.2 var(--serif); color:var(--ink); margin:0; }
+.daily-sheet .almanac-theme { display:flex; align-items:center; flex-wrap:wrap; gap:9px; margin:13px 0 8px; }
+.almanac-theme b { border:1px solid var(--red); border-radius:3px; padding:1px 5px; font:600 1.1rem/1.35 var(--serif); color:var(--red); }
+.almanac-theme strong { font:600 clamp(1.12rem,2vw,1.45rem)/1.45 var(--serif); }
+.daily-sheet .almanac-origin,.daily-sheet .daily-birth { font-size:.87rem; color:var(--muted); margin:3px 0; }
+.daily-practice h3 { margin:4px 0 7px; font:600 1.15rem/1.4 var(--serif); }
+.almanac-moves { margin:0; padding-inline-start:1.5rem; }
+.almanac-moves li { padding:3px 0 4px 3px; }
+.almanac-moves li::marker { font:500 .9rem var(--serif); color:var(--red); }
+.almanac-moves strong,.almanac-moves span { display:block; }
+.almanac-moves strong { font:600 1.08rem/1.5 var(--serif); }
+.almanac-moves span { color:var(--muted); font-size:.84rem; line-height:1.6; }
+.daily-actions a { display:inline-flex; align-items:center; text-decoration:none; }
+.daily-book .daily-full { color:var(--red); border-top-color:var(--red); }
+@media(max-width:700px) {
+  .cover .daily-layout { grid-template-columns:minmax(0,1fr); }
+  .cover .daily-book { border-inline-start:0; border-top:1px solid var(--line); }
+  .almanac-head { align-items:end; }
+}
+.daily-book .daily-achievement.daily-full {
+  display:flex; align-items:center; gap:10px; padding:10px 12px;
+  border:1px solid #ab846c; border-radius:4px; background:#f8efe1;
+  color:#763e30; font:600 1.05rem/1.6 var(--serif);
+}
+.daily-achievement.daily-full::before {
+  content:"✓"; display:grid; place-items:center; flex:none; width:24px; height:24px;
+  border:1px solid currentColor; border-radius:50%; font:600 .88rem/1 var(--sans);
+}

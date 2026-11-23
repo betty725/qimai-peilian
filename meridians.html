@@ -1,12 +1,14 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f1f7e8">
-<title>时令经络图鉴 · 气脉陪练</title>
-<link rel="icon" href="assets/gif/idle.gif"><link rel="stylesheet" href="atlas/atlas.css"><link rel="stylesheet" href="atlas/journal.css">
-<link rel="stylesheet" href="bridge/bridge.css"><link rel="stylesheet" href="bridge/continuity.css"><link rel="stylesheet" href="bridge/diary.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f7f5ef">
+<title>看山节律手记 · 气脉陪练</title>
+<link rel="icon" href="assets/gif/idle.gif"><link rel="stylesheet" href="atlas/atlas.css?v=almanac-1"><link rel="stylesheet" href="atlas/journal.css?v=almanac-1"><link rel="stylesheet" href="atlas/vitality.css">
+<link rel="stylesheet" href="bridge/bridge.css?v=paper-1"><link rel="stylesheet" href="bridge/continuity.css?v=paper-1"><link rel="stylesheet" href="bridge/diary.css?v=paper-1">
+<link rel="stylesheet" href="site-nav.css?v=paper-1"><script defer src="site-nav.js"></script>
 </head>
 <body>
+<div id="atlasSiteNav"></div>
 <svg aria-hidden="true" class="sprite" xmlns="http://www.w3.org/2000/svg"><defs>
 <symbol id="book" viewBox="0 0 24 24"><path d="M12 6C9 4 5 4 2 5v14c4-1 7-1 10 1 3-2 6-2 10-1V5c-3-1-7-1-10 1v14"/></symbol>
 <symbol id="leaf" viewBox="0 0 24 24"><path d="M20 3C13 3 4 4 4 12c0 4 3 6 6 6 7 0 10-7 10-15ZM3 21 15 9"/></symbol>
@@ -15,7 +17,7 @@
 <symbol id="right" viewBox="0 0 24 24"><path d="m10 6 6 6-6 6"/></symbol>
 <symbol id="pen" viewBox="0 0 24 24"><path d="m4 17 12-12 3 3L7 20l-4 1 1-4ZM14 7l3 3"/></symbol>
 </defs></svg>
-<a class="skip" href="#map" data-t="skip">跳至经络图谱</a>
+<a class="skip" href="#daily" data-t="skip">跳至今日练习签</a>
 <header class="mast"><div class="mast-inner">
 <a class="brand" href="./" aria-label="气脉陪练"><span class="brand-chop"><svg><use href="#leaf"/></svg></span><span data-t="brand">气脉陪练</span></a>
 <div class="mast-right"><a href="./" class="return" data-t="back">回到陪练</a><span class="nav-rule"></span><div class="languages" role="group" aria-label="Language"><button id="lang-zh" lang="zh-CN" aria-pressed="true">中文</button><button id="lang-en" lang="en" aria-pressed="false">EN</button></div></div>
@@ -24,38 +26,43 @@
 <section class="cover" aria-labelledby="book-title">
 <div class="cover-main">
 <img id="season-painting" class="season-painting" alt="" fetchpriority="high">
-<div class="cover-copy"><p class="kicker"><span></span><b data-t="edition">看山的四时手记</b></p>
-<h1 id="book-title" data-t="title">时令经络图鉴</h1>
-<p class="intro" data-t="intro">循节气读五行，跟看山认经穴。</p>
-<div class="atlas-cover-actions"><button type="button" class="ink-button" id="personalize"><svg><use href="#pen"/></svg><span id="birth-action">填写生辰，展笺</span></button><a class="journal-shortcut" data-t="toJournal" href="#daily">翻开今日养生手记</a></div></div>
+<div class="cover-copy"><p class="kicker"><span></span><b data-t="edition">节气与日柱</b></p>
+<h1 id="book-title" data-t="title">看山节律手记</h1>
+<p class="intro" data-t="intro">按今日干支选三式舒展，和看山一起集齐十干印。</p>
+<div class="atlas-cover-actions"><button type="button" class="ink-button" id="personalize"><svg><use href="#pen"/></svg><span id="birth-action">对照我的生日日柱</span></button><a class="journal-shortcut" data-t="toJournal" href="#daily">翻开今日练习签</a><a class="journal-shortcut" data-t="toVitality" href="#vitalityPanel">查看看山的气血值</a></div></div>
 <div class="cover-almanac">
 <div class="season-medallion"><div class="dial-ring" aria-hidden="true"></div><div class="dial-read"><small data-t="termNow">今日节气</small><strong id="term-name">—</strong><span id="term-en" lang="en"></span></div></div>
 <button class="browse-scrolls" id="browse-scrolls" type="button" aria-haspopup="dialog"><svg aria-hidden="true"><use href="#book"/></svg><span data-t="browseScrolls">翻阅节气画卷</span></button></div>
 </div>
+<section id="field-journal" class="field-journal" aria-labelledby="tab-daily">
+<div class="journal-tabs" role="tablist" aria-labelledby="book-title">
+<button type="button" id="tab-daily" role="tab" aria-controls="daily" aria-selected="true" data-t="dailyTab">今日练习签</button>
+<button type="button" id="tab-constitution" role="tab" aria-controls="constitution" aria-selected="false" tabindex="-1" data-t="constitutionTab">体质自评</button>
+</div>
+<div id="daily" class="journal-panel" role="tabpanel" aria-labelledby="tab-daily"><div id="rhythm-result"></div></div>
+<div id="constitution" class="journal-panel" role="tabpanel" aria-labelledby="tab-constitution" hidden></div>
+</section>
+<details class="rhythm-almanac"><summary data-t="almanacDetails">节气与生年五运</summary>
 <div class="folio" aria-live="polite">
 <div class="folio-cell"><span class="label" data-t="todayRead">当令五行</span><strong id="today-topic">—</strong><button type="button" id="today-point" class="inline-link"></button><span id="host-qi" class="sub qi-note"></span></div>
 <div class="folio-cell"><span class="label" data-t="birthTerm">出生节气</span><strong id="birth-term">尚未填写</strong><span id="birth-term-note" class="sub"></span></div>
 <div class="folio-cell"><span class="label" data-t="birthMove">生年五运</span><strong id="birth-move">尚未填写</strong><button type="button" id="birth-point" class="inline-link" hidden></button><span class="sub" id="birth-move-note"></span></div>
-</div><p class="personal-reading" id="personal-reading" hidden aria-live="polite"></p></section>
-<div class="legend-line"><span id="china-date"></span><span data-t="culture">五行与脏腑为传统文化对应。生日和节气不能判断脏腑虚实或情绪成因。</span></div>
+</div><p class="personal-reading" id="personal-reading" hidden aria-live="polite"></p></details></section>
+<div class="legend-line"><span id="china-date"></span><span data-t="culture">日签借传统五行编排舒展动作。体质虚实不能由日柱判定，练习以舒适为度。</span></div>
 <section class="atlas" id="map" aria-labelledby="atlas-title">
-<div class="section-head"><div><p class="kicker"><span></span><b data-t="atlasKicker">经络与穴位</b></p><h2 id="atlas-title" data-t="atlasTitle">看山经络图</h2></div><span class="section-note" data-t="atlasHint">选五行，或轻点看山身上的穴位。</span></div>
+<div class="section-head"><div><p class="kicker"><span></span><b data-t="atlasKicker">经络与穴位</b></p><h2 id="atlas-title" data-t="atlasTitle">看山经络图</h2></div></div>
+<div id="vitalityPanel"></div>
+<button class="map-disclosure" type="button" id="meridian-map" aria-expanded="false" aria-controls="meridian-content"><svg aria-hidden="true"><use href="#book"/></svg><span id="map-action">展开经络图</span><span class="map-chevron" aria-hidden="true"></span></button>
+<div id="meridian-content" hidden>
+<p class="map-instructions section-note" data-t="atlasHint">选五行，或轻点看山身上的穴位。</p>
 <div class="picker" id="picker" role="group" aria-label="五行经络"></div>
 <div class="spread">
 <div class="plate"><div class="plate-head"><span class="plate-label" data-t="modelLabel">立体经络示意</span><span class="view-tag" id="view-label"></span></div>
 <div class="model-stage"><span class="orbit ring-a" aria-hidden="true"></span><span class="orbit ring-b" aria-hidden="true"></span><canvas id="model" tabindex="0" aria-label="可旋转的刘看山经络模型"></canvas></div>
 <div class="plate-controls"><span data-t="rotateHint">拖动转身</span><div class="control-group"><button type="button" id="left-view" aria-label="向左转"><svg><use href="#left"/></svg></button><button type="button" id="reset-view"><svg><use href="#turn"/></svg><span data-t="front">正面</span></button><button type="button" id="right-view" aria-label="向右转"><svg><use href="#right"/></svg></button></div></div></div>
 <article class="entry" aria-live="polite"><div class="entry-top"><span class="entry-branch" id="entry-branch"></span><span class="point-code" id="point-code"></span></div><h3 id="point-name"></h3><p class="roman" id="point-roman"></p><div class="entry-part"><h4 data-t="where">人体位置</h4><p id="point-location"></p></div><div class="entry-part"><h4 data-t="observe">读图要领</h4><p id="point-note"></p></div><p class="model-note" data-t="modelNote">看山展示穴位与经脉的大致关系，人体位置以文字和标准图谱为准。</p><a id="point-discussion" class="discussion" rel="noopener noreferrer" target="_blank"></a></article>
-</div></section>
-<section id="field-journal" class="field-journal" aria-labelledby="journal-heading">
-<header class="journal-head"><h2 id="journal-heading" data-t="journalHeading">看山养生手记</h2><div class="journal-seal" aria-hidden="true"><svg><use href="#book"/></svg></div></header>
-<div class="journal-tabs" role="tablist" aria-labelledby="journal-heading">
-<button type="button" id="tab-daily" role="tab" aria-controls="daily" aria-selected="true" data-t="dailyTab">日柱小练</button>
-<button type="button" id="tab-constitution" role="tab" aria-controls="constitution" aria-selected="false" tabindex="-1" data-t="constitutionTab">体质自评</button>
-</div>
-<div id="daily" class="journal-panel" role="tabpanel" aria-labelledby="tab-daily"></div>
-<div id="constitution" class="journal-panel" role="tabpanel" aria-labelledby="tab-constitution" hidden></div>
-</section>
+</div></div></section>
+
 <details class="sources"><summary><svg><use href="#book"/></svg><b data-t="method">历法、图谱与延伸阅读</b><span aria-hidden="true">＋</span></summary><div class="source-copy">
 <p id="method-text"></p>
 <p data-t="follow">按五脏各选一条经脉、一处穴位。图上显示的是所选经脉的局部示意。</p>
@@ -66,6 +73,6 @@
 <figure class="scroll-figure"><img id="scroll-painting" alt=""><figcaption aria-live="polite"><strong id="scroll-name"></strong><span id="scroll-caption"></span></figcaption></figure>
 <div class="scroll-controls"><button type="button" id="scroll-prev" data-t="scrollPrev">上一幅</button><select id="scroll-choice" aria-label="选择节气画卷"></select><button type="button" id="scroll-next" data-t="scrollNext">下一幅</button></div>
 </dialog>
-<dialog id="birthday-modal" aria-labelledby="birth-title"><form id="birth-form" novalidate><div class="dialog-head"><p class="kicker"><span></span><b data-t="birthKicker">个人节令笺</b></p><button type="button" id="cancel-birth" aria-label="关闭">×</button></div><h2 id="birth-title" data-t="birthdayTitle">你的生日，落在哪个节气？</h2><p data-t="birthdayInfo">输入公历生日，查阅出生时的节气与生年五运。</p><label for="birthday" data-t="birthdayLabel">公历出生日期</label><input type="date" id="birthday" required aria-describedby="birth-error privacy"><p id="birth-error" class="error" role="alert"></p><p id="privacy" data-t="privacy">生日仅在本页计算，不保存、不上传。</p><div class="dialog-actions"><button class="ink-button" data-t="create" type="submit">展开我的节令笺</button><button type="button" id="clear-birth" class="inline-link" hidden data-t="clear">清除生日</button></div></form></dialog>
+<dialog id="birthday-modal" aria-labelledby="birth-title"><form id="birth-form" novalidate><div class="dialog-head"><p class="kicker"><span></span><b data-t="birthKicker">生日日柱</b></p><button type="button" id="cancel-birth" aria-label="关闭">×</button></div><h2 id="birth-title" data-t="birthdayTitle">你的公历生日是哪一天？</h2><p data-t="birthdayInfo">填好后，日签会并列显示你的生日日柱与今日日柱。</p><label for="birthday" data-t="birthdayLabel">公历出生日期</label><input type="date" id="birthday" required aria-describedby="birth-error privacy"><p id="birth-error" class="error" role="alert"></p><p id="privacy" data-t="privacy">生日仅在本页计算，不保存、不上传。</p><div class="dialog-actions"><button class="ink-button" data-t="create" type="submit">对照今日干支</button><button type="button" id="clear-birth" class="inline-link" hidden data-t="clear">清除生日</button></div></form></dialog>
 <noscript>请开启 JavaScript 以计算节气与转动模型。 Enable JavaScript to use the interactive atlas.</noscript>
-<script type="module" src="bridge/arrival.mjs"></script><script type="module" src="atlas/atlas.mjs"></script></body></html>
+<script type="module" src="bridge/arrival.mjs"></script><script type="module" src="atlas/atlas.mjs?v=almanac-1"></script><script type="module" src="atlas/vitality-ui.mjs"></script></body></html>

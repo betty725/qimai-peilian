@@ -4,6 +4,7 @@
   if(location.protocol==='file:') { $('fileWarning').hidden=false;return; }
   const D=QimaiData,P=QimaiProgress,Store=QimaiStore,Avatar=QimaiCompanion,Sound=QimaiSound;
   const {savePractice}=await import('./practice-diary.mjs');
+  const {createPineTrail}=await import('./wushu/game.js?v=pine-1');
   const poseEvaluator=QimaiCoach.createEvaluator();
   Sound.onStatus?.(message=>{$('voiceStatus').textContent=message;});
   let mode='seated',page='home',session=null,model=null,stream=null,cameraLoading=false;
@@ -23,6 +24,12 @@
   }
   function dismiss(id){if($(id).open) $(id).close();}
   function navigate(target){
+    const incoming=new URL(location.href);
+    if(incoming.searchParams.has('page')){
+      if(target==='home')incoming.searchParams.delete('page');
+      else incoming.searchParams.set('page',target);
+      history.replaceState(history.state,'',incoming);
+    }
     if(target!=='journey'){
       const route=new URL(location.href);
       if(route.searchParams.get('view')==='diary'){
@@ -31,7 +38,11 @@
     }
     page=target;
     document.querySelectorAll('.page').forEach(el=>{el.hidden=el.id!==target;});
-    document.querySelectorAll('[data-page]').forEach(el=>el.classList.toggle('active',el.dataset.page===target));
+    document.querySelectorAll('[data-page]').forEach(el=>{
+      el.classList.toggle('active',el.dataset.page===target);
+      if(el.dataset.page===target)el.setAttribute('aria-current','page');
+      else el.removeAttribute('aria-current');
+    });
     $('pageContext').textContent=({home:'今天，也给自己一小段时间',journey:'把每一份认真，留在路上',wardrobe:'你的伙伴，你来装扮',circle:'和熟悉的人，一起慢慢来'})[target];
     window.scrollTo(0,0);render();
   }
@@ -53,7 +64,7 @@
       document.querySelectorAll('[data-mode]').forEach(button=>{const selected=button.dataset.mode===mode;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});
       $('courseKind').textContent=mode==='seated'?'坐姿 · 上半身改编练习':'站姿 · 易筋经';
       $('courseTitle').textContent=mode==='seated'?'一椅松风':$('courseLength').value==='short'?'从三势开始':'十二势，连成一段时光';
-      $('courseDescription').textContent=mode==='seated'?'六段上半身练习，从合掌松肩到放松收势。':'从预备到收势，跟着刘看山逐段学习动作路径。';
+      $('courseDescription').textContent=mode==='seated'?'从合掌松肩到放松收势，每练完一段，就为看山点亮一片松叶。':'从预备到收势，跟着刘看山逐段学习动作路径。';
       $('courseDuration').textContent=chosenLessons().length+' 段 · 约 '+Math.max(1,Math.round(chosenLessons().reduce((n,l)=>n+l.steps.reduce((a,step)=>a+(mode==='standing'?QimaiMotion.duration(step)/1000+3:5),0)*D.rounds,0)/60))+' 分钟';
       $('courseLengthWrap').hidden=mode==='seated';
       $('lessonGrid').innerHTML=listForMode().map(lessonCard).join('');
@@ -141,13 +152,13 @@
     if(route?.atlasOrigin){history.back();return;}
     location.replace('meridians.html#daily');
   }
-  async function startDaily(source='home'){
+  async function startDaily(source='home',guided=false){
     if(session||openingDaily)return;
     openingDaily=true;
     try{
       const {dailySession}=await import('./daily-practice.mjs');
       const {lessons,daily}=dailySession(source,mode);
-      startPractice(lessons,false,daily);
+      startPractice(lessons,false,daily,guided);
     }catch(error){toast('日柱小练暂未载入，请刷新后重试。');}
     finally{openingDaily=false;}
   }
@@ -157,22 +168,24 @@
       return ['neck','back','afternoon'].includes(scene)?scene:'';
     }catch{return '';}
   }
-  function startPractice(lessons,demo=false,daily=null){
+  function startPractice(lessons,demo=false,daily=null,guided=false){
     if(session) return;
     dismiss('cardDialog');dismiss('resultDialog');dismiss('settingsDialog');
     const first=lessons[0];
     if(!daily)mode=first.id.startsWith('seat')?'seated':'standing';
     session={id:crypto.randomUUID(),startedAt:new Date().toISOString(),date:daily?.date||P.dayKey(),
       mode,scene:selectedDeskScene(),revision:0,lastCheckpoint:0,methods:new Set(),startedMoves:new Set(),lessons,demo,daily,index:0,phase:0,round:0,phaseElapsed:0,lessonElapsed:0,totalElapsed:0,
-      stage:'prepare',stageElapsed:0,previousPose:'prayer',playing:true,aiOn:false,aiEligible:false,challenge:!demo&&(!!daily||mode==='standing'),checkedSteps:0,completedSteps:0,hold:{elapsed:0,lastAt:null},goodMs:0,completed:[],coins:0,verifiedCount:0,
+      stage:daily&&guided?'run':'prepare',stageElapsed:0,previousPose:'prayer',playing:true,aiOn:false,aiEligible:false,challenge:!demo&&(daily?!guided:mode==='standing'),checkedSteps:0,completedSteps:0,hold:{elapsed:0,lastAt:null},goodMs:0,completed:[],coins:0,verifiedCount:0,
       saving:false,lessonRecordId:crypto.randomUUID(),speed:1};
+    session.pineTrail=!demo&&!daily&&lessons===D.seated ? createPineTrail(lessons) : null;
+    $('pineTrail').hidden=!session.pineTrail;
     QimaiReminder.setBusy(demo?'demo':true);
     $('tutorialLink').hidden=!!daily;
     $('skeleton').setAttribute('aria-label',daily?'摄像头实时识别的骨骼，动作调整提示显示在下方':'摄像头实时识别的骨骼，橙色关节表示需要调整');
     document.querySelector('.skeleton-legend span:nth-child(2)').hidden=!!daily;
     $('practice').dataset.daily=String(!!daily);
     $('practice').hidden=false;$('previewBadge').hidden=!demo;
-    document.querySelector('.sidebar').inert=true;document.querySelector('.workspace').inert=true;
+    $('siteNavShell').inert=true;document.querySelector('.workspace').inert=true;
     document.body.style.overflow='hidden';$('practice').scrollTop=0;$('exitPractice').focus({preventScroll:true});
     $('cameraToggle').disabled=demo;$('cameraToggle').textContent='开启摄像头，检验动作';$('cameraPanel').hidden=false;$('freePracticeToggle').disabled=demo;
     $('pausePractice').textContent='暂停';feedback=null;feedbackCode='';lastVideoTime=-1;lastModelAt=-1;lastAt=performance.now();drawSkeleton(null);
@@ -231,7 +244,7 @@
     $('breathToggleText').textContent='自然呼吸语音提醒';
     $('breathHelp').textContent='保持舒适幅度，按自己的节奏练习。';
     $('breathOrb').classList.remove('inhale');
-    $('recognitionStatus').textContent=s.challenge?'摄像头逐式检验，完成三式可收下'+d.stem+'字印。':'自由跟练 · 本次仅观看动作示范';
+    $('recognitionStatus').textContent=s.challenge?'摄像头逐式检验，完成三式可收下'+d.stem+'字印。':'跟着看山完成三式，收下'+d.stem+'字印。';
     $('freePracticeToggle').textContent=s.challenge?'切换自由跟练':'从第一式重新开始动作检验';
     renderObservation();
     if(announce&&prepare)Sound.speak('先看'+lesson.name+'。'+step.cue);
@@ -301,7 +314,7 @@
     else if(!s.challenge){title='按自己的节奏跟练';message='可以开启摄像头查看动作反馈；自由跟练不记录 AI 通关。';badge='自由跟练';}
     if(s.daily){
       if(s.playing&&!cameraLoading){
-        if(!s.challenge){title='看山示范中';message='想收集今日印时，可以从第一式重新开始检验。';badge='自由跟练';}
+        if(!s.challenge){title='跟着看山练三式';message='跟随左侧示范，在舒适的幅度内完成动作。需要休息时可暂停。';badge='自由跟练';}
         else if(!s.aiOn){title='开启摄像头，开始本式检验';message=s.daily.cameraError||'让头、双肩、手肘、双手和腰部进入画面。';}
         else if(s.stage==='prepare'){title='先看动作示范';message=currentStep().cue;badge='准备中';}
         else if(feedback?.tracking){title='跟着看山做'+currentLesson().name;message=feedback.message;badge='动作观察中';}
@@ -315,8 +328,8 @@
     const checks=s.aiOn&&s.playing?feedback?.checks||[]:[];
     $('poseChecklistCount').textContent=checks.length?feedback.passed+' / '+feedback.total+' 项关键动作已识别':'等待识别';
     const html=checks.length?checks.map(item=>'<li class="'+(item.ready?'passed':item.unknown?'unknown':'needs-adjust')+'"><span class="check-mark">'+(item.ready?'✓':item.unknown?'?':'·')+'</span><span>'+esc(item.label)+'</span><small>'+esc(item.actual||'')+'</small></li>').join(''):'<li>入镜后显示各项动作完成情况</li>';
-    const checklist=s.daily?s.lessons.map((item,i)=>'<li class="'+(i<s.index&&s.challenge?'passed':i===s.index?'needs-adjust':'unknown')+'"><span class="check-mark">'+(i<s.index&&s.challenge?'✓':'·')+'</span><span>'+esc(item.name)+'</span><small>'+(i<s.index?(s.challenge?'已通过':'已示范'):i===s.index?'当前动作':'待练')+'</small></li>').join(''):html;
-    if(s.daily)$('poseChecklistCount').textContent=s.verifiedCount+' / 3 式已通过';
+    const checklist=s.daily?s.lessons.map((item,i)=>'<li class="'+(i<s.index&&s.challenge?'passed':i===s.index?'needs-adjust':'unknown')+'"><span class="check-mark">'+(i<s.index&&s.challenge?'✓':'·')+'</span><span>'+esc(item.name)+'</span><small>'+(i<s.index?(s.challenge?'已通过':'已跟练'):i===s.index?'当前动作':'待练')+'</small></li>').join(''):html;
+    if(s.daily)$('poseChecklistCount').textContent=s.challenge?s.verifiedCount+' / 3 式已通过':s.completed.length+' / 3 式已跟练';
     if($('poseChecklist').innerHTML!==checklist)$('poseChecklist').innerHTML=checklist;
     $('cameraPlaceholder').hidden=!!(s.aiOn&&feedback?.tracking&&s.playing);
     $('cameraPlaceholderTitle').textContent=s.demo?'正在观看示范':s.aiOn?'调整镜头，让本步需要的关节入镜':'让刘看山看见你的动作';
@@ -531,6 +544,7 @@
   }
   function advancePhase(){
     const s=session;
+    s.pineTrail?.step(s.index,s.round,s.phase);
     if(s.challenge&&s.aiOn&&currentLesson().ai&&s.hold.complete)s.checkedSteps++;
     s.completedSteps++;s.previousPose=currentStep().pose;s.phaseElapsed=0;resetHold();feedback=null;s.phase++;
     if(s.phase<4){updatePracticeUI(true);return;}
@@ -567,6 +581,7 @@
       const reward=await change(state=>P.award(state,{id:s.lessonRecordId,lessonId:lesson.id,seconds:Math.min(900,s.lessonElapsed),verified,completedSteps:s.completedSteps,demo:s.demo}));
       if(session!==s) return;
       s.coins+=reward.coins;s.completed.push(s.pendingMove);s.pendingMove=null;if(verified)s.verifiedCount++;
+      s.pineTrail?.finishLesson(s.completed);
       Sound.chime();
       s.index++;
       if(s.index>=s.lessons.length){s.index=s.lessons.length-1;s.phase=3;s.stage='closing';s.stageElapsed=0;}
@@ -583,29 +598,33 @@
   function finishPractice(){
     const s=session;if(!s)return;
     cancelAnimationFrame(frameId);Sound.stop();stopCamera();session=null;$('practice').hidden=true;
-    document.querySelector('.sidebar').inert=false;document.querySelector('.workspace').inert=false;document.body.style.overflow='';
-    const verified=s.completed.length===s.lessons.length&&s.completed.every(move=>move.verified)&&!s.demo;
-    if(s.daily&&verified)s.daily.book.earn(s.daily.date);
+    $('siteNavShell').inert=false;document.querySelector('.workspace').inert=false;document.body.style.overflow='';
+    const finished=!s.demo&&s.completed.length===s.lessons.length;
+    const verified=finished&&s.completed.every(move=>move.verified);
+    const earnedStamp=Boolean(s.daily&&finished);
+    const newStem=earnedStamp&&s.daily.book.earn(s.daily.date,verified);
     const noteId=checkpoint(s,true);
     resultSummary={noteId,daily:!!s.daily,date:s.date,verified,demo:s.demo,completed:s.completed,coins:s.coins,seconds:s.totalElapsed,mode,at:new Date(),name:getState().name};
-    resultSummary.autoReturn=Boolean(s.daily&&verified&&s.noteStored&&s.daily.book.writable&&
+    resultSummary.autoReturn=Boolean(earnedStamp&&s.noteStored&&s.daily.book.writable&&
       s.daily.recordArrival({...resultSummary,source:s.daily.source}));
     $('resultEyebrow').textContent=s.demo?'动作演示结束':'今天的练习已收好';
     $('resultTitle').textContent=s.demo?'已经看过，可以亲自试一试。':'给这份认真一个拥抱。';
     $('resultDetail').textContent=s.demo?'角色已展示本次课程的动作路径。':'完成 '+s.completed.length+' 段练习，其中 '+s.verifiedCount+' 段完成动作要点观察。';
+    $('pineResult').hidden=!s.pineTrail;
+    $('pineResult').textContent=s.pineTrail?.summary(s.completed.length)||'';
     $('earnedCoins').textContent=s.coins;$('earnedCards').textContent=s.demo?'演示':s.completed.length;$('earnedTime').textContent=s.demo?'演示':(s.totalElapsed/60).toFixed(1);
     $('resultCards').innerHTML=s.completed.map(item=>'<span class="result-card">'+esc(item.name)+'</span>').join('');
     $('resultHint').textContent=s.demo?'演示用于查看路线。亲自完成练习后可以获得金币和动作卡。':'每式每日首次完成可得金币。到山间旅程领取里程奖励，或给伙伴挑一件装扮。';
     dailyResultRoute=s.daily;
     $('dailyReturn').hidden=!s.daily;
     $('resultJourney').hidden=!!s.daily;
-    $('resultHome').hidden=!!s.daily&&verified;
+    $('resultHome').hidden=earnedStamp;
     $('earnedCoins').parentElement.hidden=!!s.daily;
     if(s.daily){
       $('resultEyebrow').textContent=s.daily.date+' · '+s.daily.pillar+'日';
-      $('resultTitle').textContent=verified?'三式已通过，收下'+s.daily.stem+'字印':'三式示范结束';
-      $('resultDetail').textContent=verified?'摄像头已依次确认三个动作。':'完成一次自由跟练。回到图鉴可重新开始摄像头检验。';
-      if(verified){
+      $('resultTitle').textContent=earnedStamp?(newStem?'点亮了'+s.daily.stem+'字印':'三式完成，'+s.daily.stem+'字印已在册'):'三式示范结束';
+      $('resultDetail').textContent=verified?'摄像头已依次确认三个动作。':'完成三式自由跟练。';
+      if(earnedStamp){
         const stamp=s.daily.book.writable?'今日印已存入本机的十干印册。':'今日印暂留在本页。';
         $('resultHint').textContent=stamp+(resultSummary.autoReturn?'':s.noteStored?'你可以在下方整理日记，再手动返回印册。':'本次日记暂留在本页，请先复制，再返回印册。');
       }else $('resultHint').textContent='';
@@ -615,7 +634,7 @@
     if(resultSummary.autoReturn){
       dailyReturnTimer=setTimeout(()=>returnToAtlas(s.daily),1200);
     }
-    if(s.daily?verified:(!s.demo&&s.completed.length))QimaiReminder.complete();else QimaiReminder.setBusy(false);
+    if(s.daily?earnedStamp:(!s.demo&&s.completed.length))QimaiReminder.complete();else QimaiReminder.setBusy(false);
     render();
   }
   function pausePractice(){
@@ -632,7 +651,7 @@
     const noteId=checkpoint(s,true);
     const noteHint=noteId?(s.noteStored?'本次已记入练习日记。':'本次日记暂留在本页，可从山间旅程打开并复制。'):'';
     cancelAnimationFrame(frameId);Sound.stop();stopCamera();session=null;$('practice').hidden=true;
-    document.querySelector('.sidebar').inert=false;document.querySelector('.workspace').inert=false;document.body.style.overflow='';
+    $('siteNavShell').inert=false;document.querySelector('.workspace').inert=false;document.body.style.overflow='';
     if(s.daily){
       QimaiReminder.setBusy(false);
       if(s.daily.source==='atlas'&&(!noteId || (s.noteStored &&
@@ -642,7 +661,7 @@
       render();toast(noteHint||'本次日柱小练已结束。');($('homeDaily')||$('startCourse')).focus({preventScroll:true});return;
     }
     if(s.completed.length&&!s.demo)QimaiReminder.complete();else QimaiReminder.setBusy(false);
-    toast(noteHint||'本次练习已结束，可以随时再出发。');
+    toast([s.pineTrail?.summary(s.completed.length),noteHint].filter(Boolean).join(' ')||'本次练习已结束，可以随时再出发。');
     render();
     $('startCourse').focus({preventScroll:true});
   }
@@ -750,13 +769,16 @@
     const route=new URL(location.href);
     if(route.searchParams.get('practice')==='daily'){
       const source=route.searchParams.get('from')==='atlas'?'atlas':'home';
+      const guided=route.searchParams.get('mode')==='guided';
       // Start today's China civil date once. An active session keeps that original date at midnight.
-      for(const key of ['practice','from','day'])route.searchParams.delete(key);
+      for(const key of ['practice','from','day','mode'])route.searchParams.delete(key);
       history.replaceState(history.state,'',route);
-      await startDaily(source);
+      await startDaily(source,guided);
     }else if(route.searchParams.get('view')==='diary'){
       navigate('journey');
       $('practiceDiary')?.scrollIntoView({block:'start'});
+    }else if(['journey','wardrobe','circle'].includes(route.searchParams.get('page'))){
+      navigate(route.searchParams.get('page'));
     }
   }catch(error){
     $('fileWarning').textContent=error.message;$('fileWarning').hidden=false;
